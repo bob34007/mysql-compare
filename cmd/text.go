@@ -24,7 +24,7 @@ func NewTextCompareCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			log:= zap.L().Named("compare")
-
+			log.Info("process begin run at " + time.Now().String())
 			ok,err:=utils.CheckDirExist(dataDir)
 			if !ok{
 				log.Error("param dataDir error , " + err.Error())
@@ -51,7 +51,9 @@ func NewTextCompareCommand() *cobra.Command {
 			cancel()
 			defer utils.CloseFile(m)
 			//wait 200ms before exit for goruntine done
-			time.Sleep(200 * time.Millisecond)
+			log.Info("process end run at " + time.Now().String())
+			//time.Sleep(200 * time.Millisecond)
+			<-time.After(200 * time.Millisecond)
 			return nil
 		},
 	}

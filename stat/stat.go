@@ -3,9 +3,10 @@ package stat
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 var Statis = new(Stat)
@@ -165,28 +166,28 @@ func (s *Stat) PrintStaticToLog(log *zap.Logger) {
 	var logStr string
 	var strResultFiles = "ResultFiles"
 	var strReadSuccFiles = "ReadSuccFiles"
-	var strReadFailFiles ="ReadFailFiles"
-	var strExecSqlNum ="ExecSqlNum"
-	var strExecSuccNum ="ExecSuccNum"
-	var strExecFailNum ="ExecFailNum"
-	var strExecErrNoNotEqual="ExecErrNoNotEqual"
-	var strExecTimeNotEqual= "ExecTimeNotEqual"
+	var strReadFailFiles = "ReadFailFiles"
+	var strExecSqlNum = "ExecSqlNum"
+	var strExecSuccNum = "ExecSuccNum"
+	var strExecFailNum = "ExecFailNum"
+	var strExecErrNoNotEqual = "ExecErrNoNotEqual"
+	var strExecTimeNotEqual = "ExecTimeNotEqual"
 	var strRowCountNotequal = "RowCountNotequal"
 	var strRowDetailNotEqual = "RowDetailNotEqual"
 
 	s.Lock()
-	logStr +="-------------timer print begin-------------\n"
-	logStr +=fmt.Sprintf("%v : %v \n" ,strResultFiles,s.MStat[strResultFiles])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strReadSuccFiles,s.MStat[strResultFiles])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strReadFailFiles,s.MStat[strReadFailFiles])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecSqlNum,s.MStat[strExecSqlNum])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecSuccNum,s.MStat[strExecSuccNum])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecFailNum,s.MStat[strExecFailNum])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecErrNoNotEqual,s.MStat[strExecErrNoNotEqual])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecTimeNotEqual,s.MStat[strExecTimeNotEqual])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRowCountNotequal,s.MStat[strRowCountNotequal])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRowDetailNotEqual,s.MStat[strRowDetailNotEqual])
-	logStr +="-------------timer print end-------------\n"
+	logStr += "-------------timer print begin-------------\n"
+	logStr += fmt.Sprintf("%v : %v \n", strResultFiles, s.MStat[strResultFiles])
+	logStr += fmt.Sprintf("%v : %v \n", strReadSuccFiles, s.MStat[strResultFiles])
+	logStr += fmt.Sprintf("%v : %v \n", strReadFailFiles, s.MStat[strReadFailFiles])
+	logStr += fmt.Sprintf("%v : %v \n", strExecSqlNum, s.MStat[strExecSqlNum])
+	logStr += fmt.Sprintf("%v : %v \n", strExecSuccNum, s.MStat[strExecSuccNum])
+	logStr += fmt.Sprintf("%v : %v \n", strExecFailNum, s.MStat[strExecFailNum])
+	logStr += fmt.Sprintf("%v : %v \n", strExecErrNoNotEqual, s.MStat[strExecErrNoNotEqual])
+	logStr += fmt.Sprintf("%v : %v \n", strExecTimeNotEqual, s.MStat[strExecTimeNotEqual])
+	logStr += fmt.Sprintf("%v : %v \n", strRowCountNotequal, s.MStat[strRowCountNotequal])
+	logStr += fmt.Sprintf("%v : %v \n", strRowDetailNotEqual, s.MStat[strRowDetailNotEqual])
+	logStr += "-------------timer print end-------------\n"
 	s.Unlock()
 
 	log.Info(logStr)
@@ -197,82 +198,95 @@ func (s *Stat) PrintStaticToConsole() {
 	var logStr string
 	var strResultFiles = "ResultFiles"
 	var strReadSuccFiles = "ReadSuccFiles"
-	var strReadFailFiles ="ReadFailFiles"
-	var strExecSqlNum ="ExecSqlNum"
-	var strExecSuccNum ="ExecSuccNum"
-	var strExecFailNum ="ExecFailNum"
-	var strExecErrNoNotEqual="ExecErrNoNotEqual"
-	var strExecTimeNotEqual= "ExecTimeNotEqual"
+	var strReadFailFiles = "ReadFailFiles"
+	var strExecSqlNum = "ExecSqlNum"
+	var strExecSuccNum = "ExecSuccNum"
+	var strExecFailNum = "ExecFailNum"
+	var strExecErrNoNotEqual = "ExecErrNoNotEqual"
+	var strExecTimeNotEqual = "ExecTimeNotEqual"
 	var strRowCountNotequal = "RowCountNotequal"
 	var strRowDetailNotEqual = "RowDetailNotEqual"
-	var strPrExecRowCount ="PrExecRowCount"
-	var strPrExecSuccCount ="PrExecSuccCount"
-	var strPrExecFailCount ="PrExecFailCount"
-	var strPrExecTimeCount ="PrExecTimeCount"
-	var strPrMaxExecTime="PrMaxExecTime"
-	var strPrMinExecTime ="PrMinExecTime"
-	var strPrExecTimeIn10ms="PrExecTimeIn10ms"
-	var strPrExecTimeIn20ms ="PrExecTimeIn20ms"
-	var strPrExecTimeIn30ms ="PrExecTimeIn30ms"
+	var strPrExecRowCount = "PrExecRowCount"
+	var strPrExecSuccCount = "PrExecSuccCount"
+	var strPrExecFailCount = "PrExecFailCount"
+	var strPrExecTimeCount = "PrExecTimeCount"
+	var strPrMaxExecTime = "PrMaxExecTime"
+	var strPrMinExecTime = "PrMinExecTime"
+	var strPrExecTimeIn10ms = "PrExecTimeIn10ms"
+	var strPrExecTimeIn20ms = "PrExecTimeIn20ms"
+	var strPrExecTimeIn30ms = "PrExecTimeIn30ms"
 	var strPrExecTimeIn40ms = "PrExecTimeIn40ms"
-	var strPrExecTimeIn50ms ="PrExecTimeIn50ms"
+	var strPrExecTimeIn50ms = "PrExecTimeIn50ms"
 	var strPrExecTimeIn100ms = "PrExecTimeIn100ms"
-	var strPrExecTimeOut100ms ="PrExecTimeOut100ms"
+	var strPrExecTimeOut100ms = "PrExecTimeOut100ms"
 	var strRrExecTimeCount = "RrExecTimeCount"
-	var strRrExecRowCount  = "RrExecRowCount"
+	var strRrExecRowCount = "RrExecRowCount"
 	var strRrExecSuccCount = "RrExecSuccCount"
-	var strRrExecFailCount ="RrExecFailCount"
-	var strRrMaxExecTime  ="RrMaxExecTime"
-	var strRrMinExecTime  ="RrMinExecTime"
-	var strRrExecTimeIn10ms ="RrExecTimeIn10ms"
-	var strRrExecTimeIn20ms ="RrExecTimeIn20ms"
-	var strRrExecTimeIn30ms ="RrExecTimeIn30ms"
-	var strRrExecTimeIn40ms ="RrExecTimeIn40ms"
-	var strRrExecTimeIn50ms ="RrExecTimeIn50ms"
-	var strRrExecTimeIn100ms ="RrExecTimeIn100ms"
+	var strRrExecFailCount = "RrExecFailCount"
+	var strRrMaxExecTime = "RrMaxExecTime"
+	var strRrMinExecTime = "RrMinExecTime"
+	var strRrExecTimeIn10ms = "RrExecTimeIn10ms"
+	var strRrExecTimeIn20ms = "RrExecTimeIn20ms"
+	var strRrExecTimeIn30ms = "RrExecTimeIn30ms"
+	var strRrExecTimeIn40ms = "RrExecTimeIn40ms"
+	var strRrExecTimeIn50ms = "RrExecTimeIn50ms"
+	var strRrExecTimeIn100ms = "RrExecTimeIn100ms"
 	var strRrExecTimeOut100ms = "RrExecTimeOut100ms"
 
+	var ExecSuccPre uint64
+	var ReadSuccPre uint64
 	s.Lock()
-	logStr +="-------------compare result begin-------------\n"
-	logStr +=fmt.Sprintf("%v : %v \n" ,strResultFiles,s.MStat[strResultFiles])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strReadSuccFiles,s.MStat[strResultFiles])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strReadFailFiles,s.MStat[strReadFailFiles])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecSqlNum,s.MStat[strExecSqlNum])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecSuccNum,s.MStat[strExecSuccNum])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecFailNum,s.MStat[strExecFailNum])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecErrNoNotEqual,s.MStat[strExecErrNoNotEqual])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strExecTimeNotEqual,s.MStat[strExecTimeNotEqual])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRowCountNotequal,s.MStat[strRowCountNotequal])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRowDetailNotEqual,s.MStat[strRowDetailNotEqual])
-	logStr +="-------------result from packet-------------\n"
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecRowCount,s.MStat[strPrExecRowCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecSuccCount,s.MStat[strPrExecSuccCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecFailCount,s.MStat[strPrExecFailCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeCount,s.MStat[strPrExecTimeCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrMaxExecTime,s.MStat[strPrMaxExecTime])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrMinExecTime,s.MStat[strPrMinExecTime])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeIn10ms,s.MStat[strPrExecTimeIn10ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeIn20ms,s.MStat[strPrExecTimeIn20ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeIn30ms,s.MStat[strPrExecTimeIn30ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeIn40ms,s.MStat[strPrExecTimeIn40ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeIn50ms,s.MStat[strPrExecTimeIn50ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeIn100ms,s.MStat[strPrExecTimeIn100ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strPrExecTimeOut100ms,s.MStat[strPrExecTimeOut100ms])
-	logStr +="-------------result from replay server-------------\n"
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecRowCount,s.MStat[strRrExecRowCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecSuccCount,s.MStat[strRrExecSuccCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecFailCount,s.MStat[strRrExecFailCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeCount,s.MStat[strRrExecTimeCount])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrMaxExecTime,s.MStat[strRrMaxExecTime])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrMinExecTime,s.MStat[strRrMinExecTime])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeIn10ms,s.MStat[strRrExecTimeIn10ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeIn20ms,s.MStat[strRrExecTimeIn20ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeIn30ms,s.MStat[strRrExecTimeIn30ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeIn40ms,s.MStat[strRrExecTimeIn40ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeIn50ms,s.MStat[strRrExecTimeIn50ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeIn100ms,s.MStat[strRrExecTimeIn100ms])
-	logStr +=fmt.Sprintf("%v : %v \n" ,strRrExecTimeOut100ms,s.MStat[strRrExecTimeOut100ms])
-	logStr +="-------------compare result end-------------\n"
+	logStr += "-------------compare result begin-------------\n"
+	logStr += fmt.Sprintf("%v : %v \n", strResultFiles, s.MStat[strResultFiles])
+
+	if s.MStat[strResultFiles] >0 {
+		ReadSuccPre = uint64(float64( s.MStat[strReadSuccFiles]) / float64(s.MStat[strResultFiles]) * 100)
+	} else {
+		ReadSuccPre =100
+	}
+	logStr += fmt.Sprintf("%v : %v %v%% \n", strReadSuccFiles, s.MStat[strReadSuccFiles],ReadSuccPre)
+	logStr += fmt.Sprintf("%v : %v \n", strReadFailFiles, s.MStat[strReadFailFiles])
+	logStr += fmt.Sprintf("%v : %v \n", strExecSqlNum, s.MStat[strExecSqlNum])
+	if s.MStat[strExecSqlNum] > 0 {
+		ExecSuccPre = uint64(float64(s.MStat[strExecSuccNum]) / float64(s.MStat[strExecSqlNum]) * 100)
+	} else {
+		ExecSuccPre = 100
+	}
+	logStr += fmt.Sprintf("%v : %v %v%% \n", strExecSuccNum, s.MStat[strExecSuccNum], ExecSuccPre)
+	logStr += fmt.Sprintf("%v : %v \n", strExecFailNum, s.MStat[strExecFailNum])
+	logStr += fmt.Sprintf("%v : %v \n", strExecErrNoNotEqual, s.MStat[strExecErrNoNotEqual])
+	logStr += fmt.Sprintf("%v : %v \n", strExecTimeNotEqual, s.MStat[strExecTimeNotEqual])
+	logStr += fmt.Sprintf("%v : %v \n", strRowCountNotequal, s.MStat[strRowCountNotequal])
+	logStr += fmt.Sprintf("%v : %v \n", strRowDetailNotEqual, s.MStat[strRowDetailNotEqual])
+	logStr += "-------------result from packet-------------\n"
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecRowCount, s.MStat[strPrExecRowCount])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecSuccCount, s.MStat[strPrExecSuccCount])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecFailCount, s.MStat[strPrExecFailCount])
+	logStr += fmt.Sprintf("%v(us) : %v \n", strPrExecTimeCount, s.MStat[strPrExecTimeCount])
+	logStr += fmt.Sprintf("%v : %v \n", strPrMaxExecTime, s.MStat[strPrMaxExecTime])
+	logStr += fmt.Sprintf("%v : %v \n", strPrMinExecTime, s.MStat[strPrMinExecTime])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeIn10ms, s.MStat[strPrExecTimeIn10ms])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeIn20ms, s.MStat[strPrExecTimeIn20ms])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeIn30ms, s.MStat[strPrExecTimeIn30ms])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeIn40ms, s.MStat[strPrExecTimeIn40ms])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeIn50ms, s.MStat[strPrExecTimeIn50ms])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeIn100ms, s.MStat[strPrExecTimeIn100ms])
+	logStr += fmt.Sprintf("%v : %v \n", strPrExecTimeOut100ms, s.MStat[strPrExecTimeOut100ms])
+	logStr += "-------------result from replay server-------------\n"
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecRowCount, s.MStat[strRrExecRowCount])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecSuccCount, s.MStat[strRrExecSuccCount])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecFailCount, s.MStat[strRrExecFailCount])
+	logStr += fmt.Sprintf("%v(us) : %v\n", strRrExecTimeCount, s.MStat[strRrExecTimeCount])
+	logStr += fmt.Sprintf("%v : %v \n", strRrMaxExecTime, s.MStat[strRrMaxExecTime])
+	logStr += fmt.Sprintf("%v : %v \n", strRrMinExecTime, s.MStat[strRrMinExecTime])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeIn10ms, s.MStat[strRrExecTimeIn10ms])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeIn20ms, s.MStat[strRrExecTimeIn20ms])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeIn30ms, s.MStat[strRrExecTimeIn30ms])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeIn40ms, s.MStat[strRrExecTimeIn40ms])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeIn50ms, s.MStat[strRrExecTimeIn50ms])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeIn100ms, s.MStat[strRrExecTimeIn100ms])
+	logStr += fmt.Sprintf("%v : %v \n", strRrExecTimeOut100ms, s.MStat[strRrExecTimeOut100ms])
+	logStr += "-------------compare result end-------------\n"
 	s.Unlock()
 	fmt.Println(logStr)
 	return

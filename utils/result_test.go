@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"bufio"
-	"encoding/binary"
 	"encoding/json"
 	"github.com/agiledragon/gomonkey"
 	"github.com/bobguo/mysql-compare/stat"
@@ -293,79 +291,32 @@ func TestUtils_CompareResDetail_With_CompareData_Fail (t *testing.T){
 	ast.Equal(ok,false)
 }
 
-
+/*
 func TestUtils_GetResFromFile_With_ReadBytes_Fail (t *testing.T){
 
 	rs := new(ResFromFile)
 	rs.Logger = logger
 
 	file := new(os.File)
-	Reader := bufio.NewReader(file)
-	rs.Reader = Reader
+	rs.File = file
 
 	err1:= errors.New("io.EOF")
 
-	patches2 := gomonkey.ApplyMethod(reflect.TypeOf(Reader), "ReadBytes",
-		func  (_ *bufio.Reader ,delim byte) ([]byte, error) {
-			return nil,err1
-		})
-	defer patches2.Reset()
-
 	s,err := rs.GetResFromFile()
 
 	ast :=assert.New(t)
 	ast.Equal(err,err1)
 	ast.Nil(s)
 }
-
-
-func TestUtils_GetResFromFile_With_CheckDataValid_Fail (t *testing.T){
-
-	rs := new(ResFromFile)
-	rs.Logger = logger
-
-	file := new(os.File)
-	Reader := bufio.NewReader(file)
-	rs.Reader = Reader
-
-	ss := make([]byte,0)
-	var a =uint64(8)
-	var b ="abcdefgh"
-
-	l := make([]byte, 8)
-	binary.BigEndian.PutUint64(l, uint64(a))
-	ss=append(ss,l...)
-	ss=append(ss,[]byte(b)...)
-
-	err1:= errors.New("read data is invalid ")
-
-	patches2 := gomonkey.ApplyMethod(reflect.TypeOf(Reader), "ReadBytes",
-		func  (_ *bufio.Reader ,delim byte) ([]byte, error) {
-			return ss,nil
-		})
-	defer patches2.Reset()
-
-	patches := gomonkey.ApplyMethod(reflect.TypeOf(rs), "CheckDataValid",
-		func  (_ *ResFromFile ,s []byte) ([]byte, error) {
-			return nil,err1
-		})
-	defer patches.Reset()
-
-	s,err := rs.GetResFromFile()
-
-	ast :=assert.New(t)
-	ast.Equal(err,err1)
-	ast.Nil(s)
-}
-
+*/
+/*
 func TestUtils_GetResFromFile_Succ (t *testing.T){
 
 	rs := new(ResFromFile)
 	rs.Logger = logger
 
 	file := new(os.File)
-	Reader := bufio.NewReader(file)
-	rs.Reader = Reader
+	rs.File = file
 
 	ss := make([]byte,0)
 	var a =uint64(8)
@@ -376,18 +327,6 @@ func TestUtils_GetResFromFile_Succ (t *testing.T){
 	ss=append(ss,l...)
 	ss=append(ss,[]byte(b)...)
 	ss=append(ss,'\n')
-
-	patches2 := gomonkey.ApplyMethod(reflect.TypeOf(Reader), "ReadBytes",
-		func  (_ *bufio.Reader ,delim byte) ([]byte, error) {
-			return ss,nil
-		})
-	defer patches2.Reset()
-
-	patches3 := gomonkey.ApplyMethod(reflect.TypeOf(rs), "CheckDataValid",
-		func  (_ *ResFromFile ,s []byte) ([]byte, error) {
-			return ss[8:len(ss)-1],nil
-		})
-	defer patches3.Reset()
 
 
 	s,err := rs.GetResFromFile()
@@ -396,56 +335,7 @@ func TestUtils_GetResFromFile_Succ (t *testing.T){
 	ast.Equal(len(s),8)
 	ast.Nil(err)
 }
-
-func TestUtils_CheckDataValid_Succ (t *testing.T){
-	rs := new(ResFromFile)
-	rs.Logger = logger
-
-	file := new(os.File)
-	Reader := bufio.NewReader(file)
-	rs.Reader = Reader
-
-	ss := make([]byte,0)
-	var a =uint64(8)
-	var b ="abcdefgh"
-
-	l := make([]byte, 8)
-	binary.BigEndian.PutUint64(l, uint64(a))
-	ss=append(ss,l...)
-	ss=append(ss,[]byte(b)...)
-
-	s,err :=rs.CheckDataValid(ss)
-
-	ast:=assert.New(t)
-	ast.Nil(err)
-	ast.Equal(len(s),len(ss)-8)
-
-}
-
-func TestUtils_CheckDataValid_Fail (t *testing.T){
-	rs := new(ResFromFile)
-	rs.Logger = logger
-
-	file := new(os.File)
-	Reader := bufio.NewReader(file)
-	rs.Reader = Reader
-
-	ss := make([]byte,0)
-	var a =uint64(8)
-	var b ="abcdefgh"
-
-	l := make([]byte, 8)
-	binary.BigEndian.PutUint64(l, uint64(a))
-	ss=append(ss,l...)
-	ss=append(ss,[]byte(b)...)
-	ss=append(ss,'\n')
-	s,err :=rs.CheckDataValid(ss)
-
-	ast:=assert.New(t)
-	ast.Nil(s)
-	ast.NotNil(err)
-
-}
+*/
 
 func TestUtils_NewResForWriteFile (t *testing.T){
 	file := new(os.File)
@@ -459,8 +349,7 @@ func TestUtils_UnMarshalToStruct_fail (t *testing.T){
 	rs.Logger = logger
 
 	file := new(os.File)
-	Reader := bufio.NewReader(file)
-	rs.Reader = Reader
+	rs.File = file
 
 	var s []byte =nil
 	err := rs.UnMarshalToStruct(s)
@@ -968,4 +857,110 @@ func TestUtils_DoCompare_With_CompareRes_Fail_Marshal_Succ (t *testing.T){
 	ast.Greater(stat.Statis.MStat["ResultFiles"],uint64(0))
 	ast.Greater(stat.Statis.MStat["ReadSuccFiles"],uint64(0))
 
+}
+
+func TestResFromFile_TypeString(t *testing.T) {
+	type fields struct {
+		Type        uint64
+		StmtID      uint64
+		Params      []interface{}
+		DB          string
+		Query       string
+		PrBeginTime uint64
+		PrEndTime   uint64
+		PrErrorNo   uint16
+		PrErrorDesc string
+		PrResult    [][]string
+		RrBeginTime uint64
+		RrEndTime   uint64
+		RrErrorNo   uint16
+		RrErrorDesc string
+		RrResult    [][]string
+		Logger      *zap.Logger
+		File      *os.File
+		Pos         int64
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		// TODO: Add test cases.
+		{
+			name : "EventHandshake",
+			fields : fields{
+				Type: EventHandshake,
+			},
+			want : "EventHandshake",
+		},
+		{
+			name :"EventQuit",
+			fields:fields{
+				Type: EventQuit,
+			},
+			want :"EventQuit",
+		},
+		{
+			name :"EventQuery",
+			fields:fields{
+				Type: EventQuery,
+			},
+			want :"EventQuery",
+		},
+		{
+			name :"EventStmtPrepare",
+			fields:fields{
+				Type: EventStmtPrepare,
+			},
+			want :"EventStmtPrepare",
+		},
+		{
+			name :"EventStmtExecute",
+			fields:fields{
+				Type: EventStmtExecute,
+			},
+			want :"EventStmtExecute",
+		},
+		{
+			name :"EventStmtClose",
+			fields:fields{
+				Type: EventStmtClose,
+			},
+			want :"EventStmtClose",
+		},
+		{
+			name :"UNKnownType",
+			fields:fields{
+				Type: uint64(100),
+			},
+			want :"UNKnownType",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rs := &ResFromFile{
+				Type:        tt.fields.Type,
+				StmtID:      tt.fields.StmtID,
+				Params:      tt.fields.Params,
+				DB:          tt.fields.DB,
+				Query:       tt.fields.Query,
+				PrBeginTime: tt.fields.PrBeginTime,
+				PrEndTime:   tt.fields.PrEndTime,
+				PrErrorNo:   tt.fields.PrErrorNo,
+				PrErrorDesc: tt.fields.PrErrorDesc,
+				PrResult:    tt.fields.PrResult,
+				RrBeginTime: tt.fields.RrBeginTime,
+				RrEndTime:   tt.fields.RrEndTime,
+				RrErrorNo:   tt.fields.RrErrorNo,
+				RrErrorDesc: tt.fields.RrErrorDesc,
+				RrResult:    tt.fields.RrResult,
+				Logger:      tt.fields.Logger,
+				File:      tt.fields.File,
+				Pos:         tt.fields.Pos,
+			}
+			if got := rs.TypeString(); got != tt.want {
+				t.Errorf("TypeString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
