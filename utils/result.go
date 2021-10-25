@@ -75,8 +75,15 @@ func (rs *ResFromFile) InitResFromFile() {
 
 func (rs *ResFromFile) GetResFromFile() ([]byte, error) {
 
-	f := rs.File
 
+	f := rs.File
+	defer func() {
+		if err := recover(); err != nil {
+			//rs.Logger.Warn(err)
+			rs.Logger.Warn(f.Name())
+		}
+
+	}()
 	l := make([]byte,8)
 
 	_, err := f.Read(l)
