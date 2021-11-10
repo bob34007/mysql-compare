@@ -9,7 +9,7 @@ func TestUtil_hashString_Succ (t *testing.T){
 
 	var s = "abcdef"
 
-	_,err:= hashString(s)
+	_,err:= HashString(s)
 
 	ast := assert.New(t)
 

@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 	"io/ioutil"
 	"os"
+	"sync"
 )
 
 var DIRPATHNOTDIRERRIR = errors.New("the path is not dir")
@@ -26,50 +27,35 @@ func CheckDirExist(path string) (bool,error){
 }
 
 
-func CloseFile(m map[string]*os.File)  error{
-	for _,v := range m{
-		err:=v.Close()
-		if err!=nil {
-			return err
-		}
+func GetDataFile(filePath string,files map[string]int,mu *sync.Mutex) error {
+
+	err := GetFilesFromPath(filePath,files,mu)
+	if err!=nil{
+		return err
 	}
 	return nil
 }
 
-func GetDataFile(filePath string) (map[string]*os.File,error) {
+func GetFilesFromPath(filePath string,files map[string]int,mu *sync.Mutex) error {
 
-	m,err := GetFilesFromPath(filePath)
+	fs, err := ioutil.ReadDir(filePath)
 	if err!=nil{
-		return nil,err
-	}
-	for k,_ := range m{
-		m[k],err =os.Open(filePath+"/"+k)
-		if err!=nil{
-			return nil,err
-		}
-	}
-	return m,nil
-}
-
-func GetFilesFromPath(filePath string) (map[string]*os.File,error) {
-
-	m :=make(map[string]*os.File)
-
-	files, err := ioutil.ReadDir(filePath)
-	if err!=nil{
-		return nil ,err
+		return err
 	}
 
-	for _, file := range files {
+	for _, file := range fs {
 		if file.IsDir() {
 			continue
 		} else {
-			m[file.Name()]=nil
+			mu.Lock()
+			files[file.Name()]=0
+			mu.Unlock()
 		}
 	}
 
-	return m,nil
+	return nil
 }
+
 
 
 

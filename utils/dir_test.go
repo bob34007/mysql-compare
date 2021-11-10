@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"sync"
 	"testing"
 )
 
@@ -65,12 +66,42 @@ func TestUitl_GetFilesFromPath_With_ReadDir_Fail(t *testing.T){
 	})
 	defer patch.Reset()
 
-	m,err1:=GetFilesFromPath(filePath)
+	m := make(map[string]int)
+	mu := new(sync.Mutex)
+	err1:=GetFilesFromPath(filePath,m,mu)
 
 	ast:=assert.New(t)
 
-	ast.Nil(m)
+	//ast.Nil(m)
 	ast.Equal(err,err1)
 
+}
+
+func TestUitl_GetFilesFromPath_succ(t *testing.T){
+	var filePath ="./"
+	m := make(map[string]int )
+	mu := new(sync.Mutex)
+	err:= GetFilesFromPath(filePath,m,mu)
+
+	ast:=assert.New(t)
+
+	ast.Nil(err)
+}
+
+
+
+
+func TestGetDataFile_With_GetFilesFromPath_Fail(t *testing.T) {
+	filePath:="./"
+	err :=errors.New("dir is not exist")
+	patch := gomonkey.ApplyFunc(GetFilesFromPath, func (filePath string,files map[string]int,mu *sync.Mutex) error{
+		return err
+	})
+	defer patch.Reset()
+	m := make(map[string]int)
+	mu :=new(sync.Mutex)
+	err1:= GetDataFile(filePath,m,mu)
+
+	assert.New(t).Equal(err,err1)
 }
 

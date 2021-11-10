@@ -34,7 +34,6 @@ func Sort2DSlice(a [][]interface{}) {
 			//Unsupported types so far we return true
 			return false
 		}
-		return true
 	}
 	sort.Slice(a, less)
 }

@@ -1,17 +1,19 @@
-package utils
+package compare
 
 import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/bobguo/mysql-compare/parser"
+	"github.com/bobguo/mysql-compare/stat"
+	"github.com/bobguo/mysql-compare/utils"
+	"github.com/pingcap/errors"
+	"go.uber.org/zap"
 	"io"
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/bobguo/mysql-compare/stat"
-	"github.com/pingcap/errors"
-	"go.uber.org/zap"
+	"sync/atomic"
 )
 
 type ResFromFile struct {
@@ -40,12 +42,6 @@ type ResFromFile struct {
 func NewResForWriteFile(file *os.File, log *zap.Logger) *ResFromFile {
 
 	rs := new(ResFromFile)
-	//common
-	//TODO
-	//rs.DB
-	//rs.Type
-	//rs.StmtID
-	//rs.Params
 
 	// packet result
 	rs.File = file
@@ -71,7 +67,6 @@ func (rs *ResFromFile) InitResFromFile() {
 	rs.RrErrorDesc = ""
 	rs.RrResult = rs.RrResult[:0][:0]
 }
-
 
 func (rs *ResFromFile) GetResFromFile() ([]byte, error) {
 
@@ -130,38 +125,28 @@ type SqlCompareRes struct {
 	PrValues [][]string    `json:"prValues"`
 }
 
-const (
-	EventHandshake uint64 = iota
-	EventQuit
-	EventQuery
-	EventStmtPrepare
-	EventStmtExecute
-	EventStmtClose
-)
-
-func (rs *ResFromFile) TypeString() string {
-	switch rs.Type {
-	case EventHandshake:
-		return "EventHandshake"
-	case EventQuit:
-		return "EventQuit"
-	case EventQuery:
-		return "EventQuery"
-	case EventStmtPrepare:
-		return "EventStmtPrepare"
-	case EventStmtExecute:
-		return "EventStmtExecute"
-	case EventStmtClose:
-		return "EventStmtClose"
-	default:
-		return "UNKnownType"
+func (rs *ResFromFile)DetermineNeedCompareResult() bool{
+	if rs.Type == utils.EventQuery || rs.Type == utils.EventStmtExecute {
+		isSelect, err := parser.CheckIsSelectStmt(rs.Query)
+		if err != nil {
+			rs.Logger.Error("determine if SQL is select occurred error" +
+				err.Error())
+			return false
+		}
+		if isSelect == false {
+			rs.Logger.Debug(rs.Query + " type  is not select , we do not compare result ")
+			return false
+		}
+	} else{
+		return false
 	}
+	return true
 }
 
 func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 
 	res := new(SqlCompareRes)
-	res.Type = rs.TypeString()
+	res.Type = utils.TypeString(rs.Type)
 	res.Sql = rs.Query
 	res.Values = rs.Params
 
@@ -191,14 +176,8 @@ func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 	stat.Statis.SetBucketNum(rrSqlExecTime, 1)
 	stat.Statis.SetBucketNum(prSqlExecTime, 0)
 
-	var prlen = 0
-	var rrlen = 0
-
-	prlen = len(rs.PrResult)
-	rrlen = len(rs.RrResult)
-
-	m["PrExecRowCount"] = uint64(prlen)
-	m["RrExecRowCount"] = uint64(rrlen)
+	m["PrExecRowCount"] = uint64(len(rs.PrResult))
+	m["RrExecRowCount"] = uint64(len(rs.RrResult))
 
 	if rs.PrErrorNo != 0 {
 		m["PrExecFailCount"] = 1
@@ -211,17 +190,26 @@ func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 	} else {
 		m["RrExecSuccCount"] = 1
 	}
+
+	//If it is a select statement then continue to the next step
+	if !rs.DetermineNeedCompareResult(){
+		return nil
+	}
+
+	defer res.AddOneSqlResultToSQLStat(rs)
+
+	m["CompareSqlNum"]=1
+
 	//compare errcode
 	if rs.PrErrorNo != rs.RrErrorNo {
 		res.ErrCode = 1
 		res.ErrDesc = fmt.Sprintf("%v-%v", rs.PrErrorNo, rs.RrErrorNo)
 		m["ExecErrNoNotEqual"] = 1
-		m["ExecFailNum"] = 1
+		m["CompareFailNum"] = 1
 		return res
 	}
 
 	//compare exec time
-
 /*
 	if rrSqlExecTime > (10*prSqlExecTime) &&
 		rrSqlExecTime > 150*1000000 {
@@ -241,18 +229,17 @@ func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 */
 
 	//compare  result row num
-
-	if prlen != rrlen {
+	if len(rs.PrResult) != len(rs.RrResult) {
 		res.ErrCode = 3
-		res.ErrDesc = fmt.Sprintf("%v-%v", prlen, rrlen)
-		m["ExecFailNum"] = 1
+		res.ErrDesc = fmt.Sprintf("%v-%v", len(rs.PrResult) , len(rs.RrResult))
+		m["CompareFailNum"] = 1
 		m["RowCountNotequal"] = 1
 		res.RrValues = rs.RrResult
 		res.PrValues = rs.PrResult
 		return res
-	} else if prlen == 0 {
+	} else if len(rs.PrResult) == 0 {
 		res.ErrCode = 0
-		m["ExecSuccNum"] = 1
+		m["CompareSuccNum"] = 1
 		return res
 	}
 
@@ -260,7 +247,7 @@ func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 	ok, err := rs.CompareResDetail()
 	if !ok {
 		rs.Logger.Error("Compare result data fail , " + err.Error())
-		m["ExecFailNum"] = 1
+		m["CompareFailNum"] = 1
 		m["RowDetailNotEqual"] = 1
 		res.ErrCode = 4
 		res.RrValues = rs.RrResult
@@ -268,9 +255,49 @@ func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 		return res
 	}
 	res.ErrCode = 0
-	m["ExecSuccNum"] = 1
+	m["CompareSuccNum"] = 1
+
+
 
 	return res
+}
+
+func (res *SqlCompareRes) AddOneSqlResultToSQLStat(rs *ResFromFile){
+	var sqlExecFail ,sqlExecSucc , sqlErrNoNotEqual,sqlRowCountNotEqual,
+		sqlRowDetailNotEqual,sqlExecTimePr,sqlExecTimeRr uint64
+	if rs.PrBeginTime < rs.PrEndTime {
+		sqlExecTimePr = rs.PrEndTime - rs.PrBeginTime
+	} else {
+		sqlExecTimePr = 0
+	}
+	if rs.RrBeginTime < rs.RrEndTime {
+		sqlExecTimeRr = rs.RrEndTime - rs.RrBeginTime
+	} else {
+		sqlExecTimeRr = 0
+	}
+	if rs.PrErrorNo!=rs.RrErrorNo && rs.PrErrorNo!=0 {
+		sqlExecFail = 1
+	} else {
+		sqlExecSucc=1
+	}
+	switch res.ErrCode {
+	case 1 :
+		sqlErrNoNotEqual=1
+	case 3:
+		sqlRowCountNotEqual=1
+	case 4:
+		sqlRowDetailNotEqual=1
+	}
+
+	osr := parser.NewOneSQLResult(res.Sql,rs.Type,sqlExecSucc,sqlExecFail,
+		sqlErrNoNotEqual,sqlRowCountNotEqual,sqlRowDetailNotEqual,sqlExecTimePr,
+		sqlExecTimeRr,rs.Logger)
+	err := osr.OneSQLResultInit()
+	if err!=nil{
+		rs.Logger.Error(err.Error())
+		return
+	}
+	osr.AddResultToSQLStat()
 }
 
 func (rs *ResFromFile) HashPrResDetail() ([][]interface{}, error) {
@@ -279,7 +306,7 @@ func (rs *ResFromFile) HashPrResDetail() ([][]interface{}, error) {
 	for i := range rs.PrResult {
 		rowStr := strings.Join(rs.PrResult[i], "")
 		rowv := make([]interface{}, 0)
-		v, err := hashString(rowStr)
+		v, err := utils.HashString(rowStr)
 		if err != nil {
 			return nil, err
 		}
@@ -295,7 +322,7 @@ func (rs *ResFromFile) HashRrResDetail() ([][]interface{}, error) {
 	for i := range rs.RrResult {
 		rowStr := strings.Join(rs.RrResult[i], "")
 		rowv := make([]interface{}, 0)
-		v, err := hashString(rowStr)
+		v, err := utils.HashString(rowStr)
 		if err != nil {
 			return nil, err
 		}
@@ -307,7 +334,7 @@ func (rs *ResFromFile) HashRrResDetail() ([][]interface{}, error) {
 
 func (rs *ResFromFile) CompareData(a, b [][]interface{}) error {
 	for i := range a {
-		ok := CompareInterface(a[i][0], b[i][0])
+		ok := utils.CompareInterface(a[i][0], b[i][0])
 		if !ok {
 			err := errors.New("compare row string hash value not equal ")
 			return err
@@ -323,13 +350,13 @@ func (rs *ResFromFile) CompareResDetail() (bool, error) {
 		rs.Logger.Error(" hash Packet result fail , " + err.Error())
 		return false, err
 	}
-	Sort2DSlice(a)
+	utils.Sort2DSlice(a)
 	b, err := rs.HashRrResDetail()
 	if err != nil {
 		rs.Logger.Error(" hash Replay server  result fail , " + err.Error())
 		return false, err
 	}
-	Sort2DSlice(b)
+	utils.Sort2DSlice(b)
 
 	err = rs.CompareData(a, b)
 	if err != nil {
@@ -340,12 +367,48 @@ func (rs *ResFromFile) CompareResDetail() (bool, error) {
 	return true, nil
 }
 
-//read result from file ,and compare packet result and replay server result
-func DoCompare(fn string, f *os.File, wg *sync.WaitGroup) {
-	defer wg.Done()
-	logger := fileName(fn).Logger()
-	stat.Statis.AddStatic("ResultFiles", logger)
+func  DoComparePre(fn string,log *zap.Logger) (*os.File,error){
+	f , err:=utils.OpenFile(fn)
+	if err !=nil{
+		log.Error("open file fail , "+ fn)
+		return nil,err
+	}
+	return f,nil
+}
 
+func DoCompareFinish (f *os.File,log *zap.Logger,filePath,backDir,fileName string){
+	err :=utils.CloseFile(f)
+	if err!=nil {
+		log.Error("close file fail , filename "+ fileName +" "+err.Error())
+	}
+	if len(backDir) ==0{
+		return
+	}
+	err = utils.MoveFileToBackupDir(filePath,fileName,backDir)
+	if err!=nil{
+		log.Error("back file fail , filename "+ f.Name()+" "+err.Error())
+	}
+	return
+}
+
+//read result from file ,and compare packet result and replay server result
+func DoCompare(fileName string,ct *int32,wg *sync.WaitGroup,filePath,backDir string ) {
+
+
+	defer atomic.AddInt32(ct,-1)
+	defer wg.Done()
+	fn := filePath+"/"+fileName
+	logger := utils.FileName(fn).Logger()
+
+	f ,err := DoComparePre(fn,logger)
+	if err !=nil{
+		logger.Error("open result data file fail , " + err.Error())
+		return
+	}
+	defer DoCompareFinish(f,logger,filePath,backDir,fn)
+
+
+	stat.Statis.AddStatic("ResultFiles", logger)
 
 	rs := NewResForWriteFile(f, logger)
 	for {
@@ -368,12 +431,12 @@ func DoCompare(fn string, f *os.File, wg *sync.WaitGroup) {
 		}
 
 		res := rs.CompareRes()
-		if res.ErrCode != 0 {
+		if res!=nil&&res.ErrCode != 0 {
 			jsons, err := json.Marshal(res)
 			if err != nil {
 				logger.Warn("Marshal compare result to json fail , " + err.Error())
 			} else {
-				logger.Warn(string(String(jsons)))
+				logger.Warn(string(utils.String(jsons)))
 			}
 		}
 

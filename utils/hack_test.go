@@ -15,6 +15,7 @@ package utils
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -37,6 +38,15 @@ func TestString(t *testing.T) {
 		t.Fatalf("a:%v, b:%v", a, b)
 	}
 }
+
+func TestString_With_Len_Zero(t *testing.T){
+	b := []byte("")
+	a := string(String(b))
+	ast:=assert.New(t)
+
+	ast.Equal(a,"")
+}
+
 
 func TestByte(t *testing.T) {
 	a := "hello world"
@@ -62,3 +72,5 @@ func TestMutable(t *testing.T) {
 		t.Fatal("test mutable string fail")
 	}
 }
+
+

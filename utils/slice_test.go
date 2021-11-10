@@ -74,6 +74,29 @@ func TestUtil_Sort2DSlice_Int32 (t *testing.T){
 	ast.Equal(a[3][0],int32(4))
 }
 
+func TestUtil_Sort2DSlice_Uint32 (t *testing.T){
+
+	a :=make([][]interface{},0)
+	row1 := make([]interface{} ,0)
+	row1 = append(row1,uint32(1),uint32(2),uint32(3),uint32(4),uint32(5))
+	row2 := make([]interface{},0)
+	row2 = append(row2,uint32(2),uint32(3),uint32(4),uint32(5),uint32(6))
+	row3 :=make([]interface{},0)
+	row3 =append(row3,uint32(3),uint32(4),uint32(5),uint32(6),uint32(7))
+	row4 := make([]interface{},0)
+	row4= append(row4,uint32(4),uint32(5),uint32(6),uint32(7),uint32(8))
+	a=append(a,row2,row3,row4,row1)
+
+	Sort2DSlice(a)
+
+	ast:= assert.New(t)
+
+	ast.Equal(a[0][0],uint32(1))
+	ast.Equal(a[1][0],uint32(2))
+	ast.Equal(a[2][0],uint32(3))
+	ast.Equal(a[3][0],uint32(4))
+}
+
 
 func TestUtil_Sort2DSlice_Int64 (t *testing.T){
 
@@ -169,4 +192,30 @@ func TestUtil_Sort2DSlice_Byte (t *testing.T){
 	ast.Equal(a[1][0],uint16(3))
 	ast.Equal(a[2][0],uint16(4))
 	ast.Equal(a[3][0],uint16(1))
+}
+
+func TestUtil_Sore2DSlice_Row1_Nil(t *testing.T){
+
+	a :=make([][]interface{},0)
+	row1 := make([]interface{} ,0)
+	row1 = append(row1,nil)
+	row2 := make([]interface{},0)
+	row2 = append(row2,3)
+
+	a = append(a,row1,row2)
+
+	Sort2DSlice(a)
+}
+
+func TestUtil_Sore2DSlice_Row2_Nil(t *testing.T){
+
+	a :=make([][]interface{},0)
+	row1 := make([]interface{} ,0)
+	row1 = append(row1,1)
+	row2 := make([]interface{},0)
+	row2 = append(row2,nil)
+
+	a = append(a,row1,row2)
+
+	Sort2DSlice(a)
 }
