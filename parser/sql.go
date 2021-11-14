@@ -150,17 +150,18 @@ func (osr *OneSQLResult)OneSQLResultInit() error {
 	return nil
 }
 
-func (osr *OneSQLResult)AddResultToSQLStat()  {
+func (osr *OneSQLResult)AddResultToSQLStat() (uint64,uint64) {
 	sqlCompareSucc := 1-osr.SQLErrNoNotEqual - osr.SQLRowCountNotEqual -osr.SQLRowDetailNotEqual
 	sqlCompareFail := 1- sqlCompareSucc
 	if osr.SQLType ==utils.EventQuery  {
-		stat.AddKey(osr.SQLHashKey, osr.SQLTemplate, 1, osr.SQLExecSucc, osr.SQLExecFail, sqlCompareSucc,
+		return stat.AddKey(osr.SQLHashKey, osr.SQLTemplate, 1, osr.SQLExecSucc, osr.SQLExecFail, sqlCompareSucc,
 			sqlCompareFail, osr.SQLErrNoNotEqual, osr.SQLRowCountNotEqual, osr.SQLRowDetailNotEqual,
 			osr.SQLExecTimePr, osr.SQLExecTimeRr, osr.Log)
 	}
 	if osr.SQLType == utils.EventStmtExecute  {
-		stat.AddKey(osr.SQLHashKey, osr.SQL, 1, osr.SQLExecSucc, osr.SQLExecFail, sqlCompareSucc,
+		return stat.AddKey(osr.SQLHashKey, osr.SQL, 1, osr.SQLExecSucc, osr.SQLExecFail, sqlCompareSucc,
 			sqlCompareFail, osr.SQLErrNoNotEqual, osr.SQLRowCountNotEqual, osr.SQLRowDetailNotEqual,
 			osr.SQLExecTimePr, osr.SQLExecTimeRr, osr.Log)
 	}
+	return 0,0
 }

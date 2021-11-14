@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/bobguo/mysql-compare/compare"
 	"github.com/bobguo/mysql-compare/stat"
 	"github.com/bobguo/mysql-compare/utils"
@@ -12,12 +13,29 @@ import (
 	"time"
 )
 
+func printTime(log *zap.Logger) {
+	t := time.NewTicker(time.Second * 60)
+	ts := time.Now()
+	for {
+		select {
+		case <-t.C:
+			fmt.Println(time.Now().String() + ":" + fmt.Sprintf("program run %v seconds", time.Since(ts).Seconds()))
+		default:
+			time.Sleep(time.Second * 5)
+		}
+
+	}
+
+}
+
 func NewTextCompareCommand() *cobra.Command {
 	var (
 		dataDir       string
 		backDir       string
 		maxGoroutines int32
 		runTime       uint32
+		listenPort    uint16
+		basePercent   uint16
 	)
 	cmd := &cobra.Command{
 		Use:   "compare",
@@ -31,6 +49,9 @@ func NewTextCompareCommand() *cobra.Command {
 				log.Error("param dataDir error , " + err.Error())
 				return nil
 			}
+
+			go printTime(log)
+
 			ts := time.Now()
 			t := time.NewTicker(3 * time.Second)
 			defer t.Stop()
@@ -43,6 +64,11 @@ func NewTextCompareCommand() *cobra.Command {
 				log.Error("get file from dataDir fail , " + err.Error())
 				return nil
 			}
+
+			compare.BasePercent = uint64(basePercent)
+			//use for save server channel
+			c := make(chan int, 1)
+			go AddPortListenAndServer(listenPort,c)
 
 			wg := new(sync.WaitGroup)
 			ctx, cancel := context.WithCancel(context.Background())
@@ -61,7 +87,7 @@ func NewTextCompareCommand() *cobra.Command {
 						atomic.AddInt32(&ctGorountines, 1)
 						wg.Add(1)
 						go func(k string) {
-							compare.DoCompare(k, &ctGorountines, wg,dataDir,backDir)
+							compare.DoCompare(k, &ctGorountines, wg, dataDir, backDir)
 						}(k)
 						if atomic.LoadInt32(&ctGorountines) >= maxGoroutines {
 							break
@@ -75,6 +101,8 @@ func NewTextCompareCommand() *cobra.Command {
 					if time.Now().Sub(ts).Seconds() > float64(runTime*60) {
 						exit = true
 					}
+				case <-c:
+					exit = true
 				default:
 					//
 				}
@@ -93,6 +121,8 @@ func NewTextCompareCommand() *cobra.Command {
 			log.Info("process end run at " + time.Now().String())
 
 			<-time.After(200 * time.Millisecond)
+
+			close(c)
 			return nil
 		},
 	}
@@ -102,6 +132,9 @@ func NewTextCompareCommand() *cobra.Command {
 	cmd.Flags().Int32VarP(&maxGoroutines, "max-routines", "g", 10, "max goroutines to parse result files")
 	cmd.Flags().Uint32VarP(&runTime, "runtime", "t", 10,
 		"program runtime, if zero is specified then all files in the current directory will be processed")
+	cmd.Flags().Uint16VarP(&listenPort, "listen-port", "P", 7001, "http server port , Provide query statistical (query) information and exit (exit) services")
+	cmd.Flags().Uint16VarP(&basePercent, "base-percent", "B", 100, "SQL execution time deterioration statistics benchmark %")
+
 	return cmd
 }
 

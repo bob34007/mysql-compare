@@ -16,6 +16,10 @@ import (
 	"sync/atomic"
 )
 
+
+var BasePercent uint64
+
+
 type ResFromFile struct {
 	Type   uint64        `json:"type"`
 	StmtID uint64        `json:"stmtID,omitempty"`
@@ -275,7 +279,7 @@ func (res *SqlCompareRes) AddOneSqlResultToSQLStat(rs *ResFromFile){
 	} else {
 		sqlExecTimeRr = 0
 	}
-	if rs.PrErrorNo!=rs.RrErrorNo && rs.PrErrorNo!=0 {
+	if rs.PrErrorNo!=rs.RrErrorNo || rs.PrErrorNo!=0 {
 		sqlExecFail = 1
 	} else {
 		sqlExecSucc=1
@@ -297,8 +301,57 @@ func (res *SqlCompareRes) AddOneSqlResultToSQLStat(rs *ResFromFile){
 		rs.Logger.Error(err.Error())
 		return
 	}
-	osr.AddResultToSQLStat()
+	prAvgTime,rrAvgtime := osr.AddResultToSQLStat()
+	rs.PrintExecCostTimeAbnormal(prAvgTime,rrAvgtime)
 }
+
+
+func (rs *ResFromFile)PrintExecCostTimeAbnormal(prAvgTime,rrAvgTime uint64){
+	if prAvgTime == 0 && rrAvgTime ==0{
+		return
+	}
+	var logStr string
+	if rs.PrEndTime>rs.PrBeginTime && (rs.PrEndTime - rs.PrBeginTime > prAvgTime * (100+BasePercent) / 100) {
+		if rs.Type == utils.EventQuery {
+			logStr = fmt.Sprintf("sql %s exec cost time abnormal %v-%v,sql begin exec at %v",
+				rs.Query,rs.PrEndTime - rs.PrBeginTime , prAvgTime,rs.PrBeginTime)
+		}
+		if rs.Type == utils.EventStmtExecute {
+			logStr = fmt.Sprintf("sql %v with param %v exec cost time abnormal %v-%v,sql begin exec at %v",
+				rs.Query,rs.Params,rs.PrEndTime - rs.PrBeginTime , prAvgTime,rs.PrBeginTime)
+		}
+	}
+	if len(logStr) > 0 {
+		rs.Logger.Error(logStr)
+	}
+	if rs.RrEndTime>rs.RrBeginTime && (rs.RrEndTime - rs.RrBeginTime > rrAvgTime * (100+BasePercent)  / 100) {
+		if rs.Type == utils.EventQuery {
+			logStr = fmt.Sprintf("sql %s exec cost time abnormal %v-%v,sql begin exec at %v",
+				rs.Query,rs.RrEndTime - rs.RrBeginTime , rrAvgTime,rs.RrBeginTime)
+		}
+		if rs.Type == utils.EventStmtExecute {
+			logStr = fmt.Sprintf("sql %v with param %v exec cost time abnormal %v-%v,sql begin exec at %v",
+				rs.Query,rs.Params,rs.RrEndTime - rs.RrBeginTime , rrAvgTime,rs.RrBeginTime)
+		}
+	}
+	if len(logStr) > 0 {
+		rs.Logger.Error(logStr)
+	}
+	if rs.RrEndTime>rs.RrBeginTime && (rs.RrEndTime - rs.RrBeginTime > prAvgTime * (100+BasePercent) / 100) {
+		if rs.Type == utils.EventQuery {
+			logStr = fmt.Sprintf("sql %s exec cost time lg than production exec cost avg time  %v-%v,sql begin exec at %v",
+				rs.Query,rs.RrEndTime - rs.RrBeginTime , prAvgTime,rs.RrBeginTime)
+		}
+		if rs.Type == utils.EventStmtExecute {
+			logStr = fmt.Sprintf("sql %v with param %v exec cost time lg than production exec cost avg time %v-%v,sql begin exec at %v",
+				rs.Query,rs.Params,rs.RrEndTime - rs.RrBeginTime , prAvgTime,rs.RrBeginTime)
+		}
+	}
+	if len(logStr) > 0 {
+		rs.Logger.Error(logStr)
+	}
+}
+
 
 func (rs *ResFromFile) HashPrResDetail() ([][]interface{}, error) {
 	//var rowStr string

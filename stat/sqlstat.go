@@ -81,7 +81,7 @@ func init(){
 //add key to map
 func AddKey( key uint64,SQL string, ExecSQL, ExecSQLSucc, ExecSQLFail, SQLCompareSucc,
 	SQLCompareFail, SQLCompareErrNoFail, SQLCompareRowCountFail,
-	SQLCompareRowDetailFail, SQLExecTimePr, SQLExecTimeRr uint64,log *zap.Logger)  {
+	SQLCompareRowDetailFail, SQLExecTimePr, SQLExecTimeRr uint64,log *zap.Logger) (prAvgTime uint64, rrAvgTime uint64) {
 	Mu.Lock()
 	defer Mu.Unlock()
 	if v, ok := SQLResults[key]; ok {
@@ -98,6 +98,8 @@ func AddKey( key uint64,SQL string, ExecSQL, ExecSQLSucc, ExecSQLFail, SQLCompar
 				(*SQLResults[key][i]).SQLCompareRowDetailFailCount += SQLCompareRowDetailFail
 				(*SQLResults[key][i]).SQLExecTimeCountPr += SQLExecTimePr
 				(*SQLResults[key][i]).SQLExecTimeCountRr += SQLExecTimeRr
+				prAvgTime= (*SQLResults[key][i]).SQLExecTimeCountPr/(*SQLResults[key][i]).SQLExecCount
+				rrAvgTime=(*SQLResults[key][i]).SQLExecTimeCountRr/(*SQLResults[key][i]).SQLExecCount
 				found = true
 				break
 			}
@@ -116,6 +118,8 @@ func AddKey( key uint64,SQL string, ExecSQL, ExecSQLSucc, ExecSQLFail, SQLCompar
 				SQLExecTimeCountPr:           SQLExecTimePr,
 				SQLExecTimeCountRr:           SQLExecTimeRr,
 			})
+			prAvgTime= SQLExecTimePr
+			rrAvgTime= SQLExecTimeRr
 		}
 	} else {
 		sliceSQLResult := make([]*SQLResult, 0)
@@ -132,6 +136,8 @@ func AddKey( key uint64,SQL string, ExecSQL, ExecSQLSucc, ExecSQLFail, SQLCompar
 			SQLExecTimeCountPr:           SQLExecTimePr,
 			SQLExecTimeCountRr:           SQLExecTimeRr,
 		})
+		prAvgTime=SQLExecTimePr
+		rrAvgTime=SQLExecTimeRr
 		SQLResults[key] = sliceSQLResult
 	}
 	log.Debug(" add key " + SQL + "to map success ")
@@ -164,5 +170,21 @@ func PrintMap(log *zap.Logger) error {
 		}
 	}
 	return nil
+}
+
+func QueryMapStr() (error,string) {
+	Mu.RLock()
+	defer Mu.RUnlock()
+	var statStr string
+	for _, v := range SQLResults {
+		for _, rs := range v {
+			str, err := rs.String()
+			if err != nil {
+				return err,""
+			}
+			statStr+=str+"\n"
+		}
+	}
+	return nil,statStr
 }
 

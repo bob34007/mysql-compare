@@ -405,461 +405,6 @@ func TestUtils_UnMarshalToStruct_Succ(t *testing.T) {
 	ast.Nil(err)
 }
 
-/*
-func TestUtils_CompareRes_Succ(t *testing.T) {
-
-	rs := InitResFromFile()
-
-	scr := rs.CompareRes()
-
-	ast := assert.New(t)
-
-	ast.Equal(scr.ErrCode, 0)
-
-}
-
-
-func InitResFromFileErrorNoNotEq() *ResFromFile {
-	rs := new(ResFromFile)
-	rs.RrResult = make([][]string, 0)
-
-	rowRes1 := make([]string, 0)
-	rowRes1 = append(rowRes1, "hello", "word", "program")
-
-	rowRes2 := make([]string, 0)
-	rowRes2 = append(rowRes2, "hello1", "word1", "program1")
-
-	rs.RrResult = append(rs.RrResult, rowRes1, rowRes2)
-
-	rs.PrResult = make([][]string, 0)
-	rowRes11 := make([]string, 0)
-
-	rowRes11 = append(rowRes11, "hello", "word", "program")
-
-	rowRes12 := make([]string, 0)
-	rowRes12 = append(rowRes12, "hello1", "word1", "program1")
-	rs.PrResult = append(rs.PrResult, rowRes11, rowRes12)
-
-	rs.Logger = log
-
-	rs.Type = 1
-	rs.StmtID = 10
-	rs.Params = make([]interface{}, 0)
-	rs.Params = append(rs.Params, "abc")
-	rs.DB = "test"
-	rs.Query = "select * from test.test where name=?"
-	var timeNow  = uint64(time.Now().UnixNano())
-	rs.PrBeginTime = timeNow
-	rs.PrEndTime = timeNow
-	rs.PrErrorNo = 1206
-	rs.PrErrorDesc = "lock wait timeout"
-
-	rs.RrEndTime = timeNow
-	rs.RrBeginTime = timeNow
-	rs.RrErrorNo = 1205
-	rs.RrErrorDesc = "lock wait timeout"
-	return rs
-}
-
-func TestUtils_CompareRes_With_Errcode1(t *testing.T) {
-
-	rs := InitResFromFileErrorNoNotEq()
-
-	scr := rs.CompareRes()
-
-	ast := assert.New(t)
-
-	ast.Equal(scr.ErrCode, 1)
-
-}
-
-func InitResFromFileExecTimeNotEq() *ResFromFile {
-	rs := new(ResFromFile)
-	rs.RrResult = make([][]string, 0)
-
-	rowRes1 := make([]string, 0)
-	rowRes1 = append(rowRes1, "hello", "word", "program")
-
-	rowRes2 := make([]string, 0)
-	rowRes2 = append(rowRes2, "hello1", "word1", "program1")
-
-	rs.RrResult = append(rs.RrResult, rowRes1, rowRes2)
-
-	rs.PrResult = make([][]string, 0)
-	rowRes11 := make([]string, 0)
-
-	rowRes11 = append(rowRes11, "hello", "word", "program")
-
-	rowRes12 := make([]string, 0)
-	rowRes12 = append(rowRes12, "hello1", "word1", "program1")
-	rs.PrResult = append(rs.PrResult, rowRes11, rowRes12)
-
-	rs.Logger = log
-
-	rs.Type = 1
-	rs.StmtID = 10
-	rs.Params = make([]interface{}, 0)
-	rs.Params = append(rs.Params, "abc")
-	rs.DB = "test"
-	rs.Query = "select * from test.test where name=?"
-	var timeNow  = uint64(time.Now().UnixNano())
-	rs.PrBeginTime = timeNow
-	rs.PrEndTime = timeNow + 200
-	rs.PrErrorNo = 1205
-	rs.PrErrorDesc = "lock wait timeout"
-
-	rs.RrEndTime = timeNow + 200000000
-	rs.RrBeginTime = timeNow
-	rs.RrErrorNo = 1205
-	rs.RrErrorDesc = "lock wait timeout"
-	return rs
-}
-
-
-func TestUtils_CompareRes_With_Errcode2(t *testing.T) {
-
-	rs := InitResFromFileExecTimeNotEq()
-
-	scr := rs.CompareRes()
-
-	ast := assert.New(t)
-
-	ast.Equal(scr.ErrCode, 0)
-
-}
-
-
-func InitResFromFileResRowLenNotEq() *ResFromFile {
-	rs := new(ResFromFile)
-	rs.RrResult = make([][]string, 0)
-
-	rowRes1 := make([]string, 0)
-	rowRes1 = append(rowRes1, "hello", "word", "program")
-
-	rowRes2 := make([]string, 0)
-	rowRes2 = append(rowRes2, "hello1", "word1", "program1")
-
-	rs.RrResult = append(rs.RrResult, rowRes1, rowRes2)
-
-	rs.PrResult = make([][]string, 0)
-	rowRes11 := make([]string, 0)
-
-	rowRes11 = append(rowRes11, "hello", "word", "program")
-
-	rs.PrResult = append(rs.PrResult, rowRes11)
-
-	rs.Logger = log
-
-	rs.Type = 1
-	rs.StmtID = 10
-	rs.Params = make([]interface{}, 0)
-	rs.Params = append(rs.Params, "abc")
-	rs.DB = "test"
-	rs.Query = "select * from test.test where name=?"
-	var timeNow  = uint64(time.Now().UnixNano())
-	rs.PrBeginTime = timeNow
-	rs.PrEndTime = timeNow + 200
-	rs.PrErrorNo = 1205
-	rs.PrErrorDesc = "lock wait timeout"
-
-	rs.RrEndTime = timeNow + 200
-	rs.RrBeginTime = timeNow
-	rs.RrErrorNo = 1205
-	rs.RrErrorDesc = "lock wait timeout"
-	return rs
-}
-
-func TestUtils_CompareRes_With_Errcode3(t *testing.T) {
-
-	rs := InitResFromFileResRowLenNotEq()
-
-	scr := rs.CompareRes()
-
-	ast := assert.New(t)
-
-	ast.Equal(scr.ErrCode, 3)
-
-}
-
-func InitResFromFileResRowDetailNotEq() *ResFromFile {
-	rs := new(ResFromFile)
-	rs.RrResult = make([][]string, 0)
-
-	rowRes1 := make([]string, 0)
-	rowRes1 = append(rowRes1, "hello", "word", "program")
-
-	rowRes2 := make([]string, 0)
-	rowRes2 = append(rowRes2, "hello1", "word1", "program1")
-
-	rs.RrResult = append(rs.RrResult, rowRes1, rowRes2)
-
-	rs.PrResult = make([][]string, 0)
-	rowRes11 := make([]string, 0)
-
-	rowRes11 = append(rowRes11, "hello", "word", "program")
-
-	rowRes12 := make([]string, 0)
-	rowRes12 = append(rowRes2, "hello1", "word2", "program1")
-
-	rs.PrResult = append(rs.PrResult, rowRes11, rowRes12)
-
-	rs.Logger = log
-
-	rs.Type = 1
-	rs.StmtID = 10
-	rs.Params = make([]interface{}, 0)
-	rs.Params = append(rs.Params, "abc")
-	rs.DB = "test"
-	rs.Query = "select * from test.test where name=?"
-	var timeNow  = uint64(time.Now().UnixNano())
-	rs.PrBeginTime = timeNow
-	rs.PrEndTime = timeNow + 200
-	rs.PrErrorNo = 1205
-	rs.PrErrorDesc = "lock wait timeout"
-
-	rs.RrEndTime = timeNow + 200
-	rs.RrBeginTime = timeNow
-	rs.RrErrorNo = 1205
-	rs.RrErrorDesc = "lock wait timeout"
-	return rs
-}
-
-func TestUtils_CompareRes_With_Errcode4(t *testing.T) {
-
-	rs := InitResFromFileResRowDetailNotEq()
-
-	scr := rs.CompareRes()
-
-	ast := assert.New(t)
-
-	ast.Equal(scr.ErrCode, 4)
-
-}
-
-
-
-func TestUtils_DoCompare_With_GetResFromFile_Fail(t *testing.T) {
-	file := new(os.File)
-	fn := "result-test"
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	filePath:="./"
-	backDir:="./"
-
-	rs := NewResForWriteFile(file, log)
-
-	patch := gomonkey.ApplyFunc(NewResForWriteFile, func(file *os.File, log *zap.Logger) *ResFromFile {
-		return rs
-	})
-	defer patch.Reset()
-
-	err := errors.New("get data from file fail")
-
-	patches := gomonkey.ApplyMethod(reflect.TypeOf(rs), "GetResFromFile",
-		func(_ *ResFromFile) ([]byte, error) {
-			return nil, err
-		})
-	defer patches.Reset()
-	var ct int32=1
-	DoCompare(fn, &ct, &wg,filePath,backDir)
-
-	ast := assert.New(t)
-
-	ast.Greater(stat.Statis.MStat["ResultFiles"], uint64(0))
-	ast.Greater(stat.Statis.MStat["ReadFailFiles"], uint64(0))
-
-}
-
-func TestUtils_DoCompare_With_GetResFromFile_Fail_EOF(t *testing.T) {
-	file := new(os.File)
-	fn := "result-test"
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	filePath:="./"
-	backDir:="./"
-
-	rs := NewResForWriteFile(file, log)
-
-	patch := gomonkey.ApplyFunc(NewResForWriteFile, func(file *os.File, log *zap.Logger) *ResFromFile {
-		return rs
-	})
-	defer patch.Reset()
-
-	patches := gomonkey.ApplyMethod(reflect.TypeOf(rs), "GetResFromFile",
-		func(_ *ResFromFile) ([]byte, error) {
-			return nil, io.EOF
-		})
-	defer patches.Reset()
-
-	var ct int32=1
-	DoCompare(fn, &ct, &wg,filePath,backDir)
-
-	ast := assert.New(t)
-
-	ast.Greater(stat.Statis.MStat["ResultFiles"], uint64(0))
-	ast.Greater(stat.Statis.MStat["ReadSuccFiles"], uint64(0))
-
-}
-
-func TestUtils_DoCompare_With_UnMarshalToStruct_Fail(t *testing.T) {
-	file := new(os.File)
-	fn := "result-test"
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	rs := NewResForWriteFile(file, log)
-
-	patch := gomonkey.ApplyFunc(NewResForWriteFile, func(file *os.File, log *zap.Logger) *ResFromFile {
-		return rs
-	})
-	defer patch.Reset()
-
-	patches := gomonkey.ApplyMethod(reflect.TypeOf(rs), "GetResFromFile",
-		func(_ *ResFromFile) ([]byte, error) {
-			return nil, nil
-		})
-	defer patches.Reset()
-
-	err := errors.New("unmarshal to struct fail")
-	patches1 := gomonkey.ApplyMethod(reflect.TypeOf(rs), "UnMarshalToStruct",
-		func(_ *ResFromFile, s []byte) error {
-			return err
-		})
-	defer patches1.Reset()
-
-	var ct int32=1
-	DoCompare(fn, &ct, &wg,"./","./")
-
-	ast := assert.New(t)
-
-	ast.Greater(stat.Statis.MStat["ResultFiles"], uint64(0))
-	ast.Greater(stat.Statis.MStat["ReadFailFiles"], uint64(0))
-
-}
-
-
-func TestUtils_DoCompare_With_CompareRes_Fail_Marshal_Fail(t *testing.T) {
-	file := new(os.File)
-	fn := "result-test"
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	rs := NewResForWriteFile(file, log)
-	rs.Query = "select * from test.test where id =?"
-
-	a := gomonkey.OutputCell{
-		Values: gomonkey.Params{nil, nil},
-		Times:  1,
-	}
-
-	b := gomonkey.OutputCell{
-		Values: gomonkey.Params{nil, io.EOF},
-		Times:  2,
-	}
-	outputs := make([]gomonkey.OutputCell, 0)
-	outputs = append(outputs, a, b)
-
-	patch := gomonkey.ApplyFunc(NewResForWriteFile, func(file *os.File, log *zap.Logger) *ResFromFile {
-		return rs
-	})
-	defer patch.Reset()
-
-	patches := gomonkey.ApplyMethodSeq(reflect.TypeOf(rs), "GetResFromFile",
-		outputs)
-	defer patches.Reset()
-
-	patches1 := gomonkey.ApplyMethod(reflect.TypeOf(rs), "UnMarshalToStruct",
-		func(_ *ResFromFile, s []byte) error {
-			return nil
-		})
-	defer patches1.Reset()
-
-	err := errors.New("marshal data fail")
-	patch1 := gomonkey.ApplyFunc(json.Marshal, func(v interface{}) ([]byte, error) {
-		return nil, err
-	})
-	defer patch1.Reset()
-
-	res := new(SqlCompareRes)
-	res.Sql = "select * from test.test where id =?"
-	res.ErrCode = 1
-	res.ErrDesc = "1205-1206"
-	res.Values = make([]interface{}, 0)
-	res.Values = append(res.Values, "abc")
-
-
-	var ct int32=1
-	DoCompare(fn, &ct, &wg,"./","./")
-
-	ast := assert.New(t)
-
-	ast.Greater(stat.Statis.MStat["ResultFiles"], uint64(0))
-	ast.Greater(stat.Statis.MStat["ReadSuccFiles"], uint64(0))
-
-}
-
-
-
-func TestUtils_DoCompare_With_CompareRes_Fail_Marshal_Succ(t *testing.T) {
-	file := new(os.File)
-	fn := "result-test"
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	rs := NewResForWriteFile(file, log)
-
-	a := gomonkey.OutputCell{
-		Values: gomonkey.Params{nil, nil},
-		Times:  1,
-	}
-
-	b := gomonkey.OutputCell{
-		Values: gomonkey.Params{nil, io.EOF},
-		Times:  2,
-	}
-	outputs := make([]gomonkey.OutputCell, 0)
-	outputs = append(outputs, a, b)
-
-	patch := gomonkey.ApplyFunc(NewResForWriteFile, func(file *os.File, log *zap.Logger) *ResFromFile {
-		return rs
-	})
-	defer patch.Reset()
-
-	patches := gomonkey.ApplyMethodSeq(reflect.TypeOf(rs), "GetResFromFile",
-		outputs)
-	defer patches.Reset()
-
-	patches1 := gomonkey.ApplyMethod(reflect.TypeOf(rs), "UnMarshalToStruct",
-		func(_ *ResFromFile, s []byte) error {
-			return nil
-		})
-	defer patches1.Reset()
-
-	//err:=errors.New("marshal data fail")
-	patch1 := gomonkey.ApplyFunc(json.Marshal, func(v interface{}) ([]byte, error) {
-		return nil, nil
-	})
-	defer patch1.Reset()
-
-	res := new(SqlCompareRes)
-	res.Sql = "select * from test.test wher id =?"
-	res.ErrCode = 1
-	res.ErrDesc = "1205-1206"
-	res.Values = make([]interface{}, 0)
-	res.Values = append(res.Values, "abc")
-
-	DoCompare(fn, file, &wg)
-
-	ast := assert.New(t)
-
-	ast.Greater(stat.Statis.MStat["ResultFiles"], uint64(0))
-	ast.Greater(stat.Statis.MStat["ReadSuccFiles"], uint64(0))
-
-}
-*/
-
 func Test_GetResFromFile_First_Read_EOF(t *testing.T){
 	file := new(os.File)
 
@@ -1072,7 +617,14 @@ func TestDoCompareFinish_with_move_fail(t *testing.T) {
 	})
 	defer patch.Reset()
 
-	DoCompareFinish(file,log,"./","","test")
+
+	patches1 := gomonkey.ApplyMethod(reflect.TypeOf(file), "Name",
+		func(_ *os.File) string {
+			return "test"
+		})
+	defer patches1.Reset()
+
+	DoCompareFinish(file,log,"./","./","test")
 }
 
 func TestDoCompareFinish_with_move_succ(t *testing.T) {
@@ -1083,5 +635,265 @@ func TestDoCompareFinish_with_move_succ(t *testing.T) {
 	})
 	defer patch.Reset()
 
-	DoCompareFinish(file,log,"./","","test")
+	DoCompareFinish(file,log,"./","./","test")
+}
+
+func TestResFromFile_PrintExecCostTimeAbnormal_with_avgTime_0(t *testing.T){
+	rs :=&ResFromFile{
+		Logger:log,
+		PrBeginTime: uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		Type : utils.EventQuery,
+		Query :"select * from t",
+	}
+	rs.PrintExecCostTimeAbnormal(0,0)
+}
+
+func TestResFromFile_PrintExecCostTimeAbnormal_With_EventQuery(t *testing.T){
+	rs :=&ResFromFile{
+		Logger:log,
+		PrBeginTime: uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		Type : utils.EventQuery,
+		Query :"select * from t",
+	}
+	rs.PrintExecCostTimeAbnormal(900,900)
+}
+
+func TestResFromFile_PrintExecCostTimeAbnormal_With_EventStmtExecute(t *testing.T){
+	rs :=&ResFromFile{
+		Logger:log,
+		PrBeginTime: uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		Type : utils.EventStmtExecute,
+		Query :"select * from t where name =?",
+		Params: []interface{}{"test"},
+	}
+	rs.PrintExecCostTimeAbnormal(900,900)
+}
+
+func TestInitResFromFile(t *testing.T){
+	f := new(os.File)
+
+	rs := NewResForWriteFile(f,log)
+
+	rs.InitResFromFile()
+
+}
+
+func TestSqlCompareRes_AddOneSqlResultToSQLStat_PrTimeErr (t *testing.T){
+
+	scr := &SqlCompareRes{
+		ErrCode: 1,
+		Sql : "select * from a;",
+	}
+	rs := &ResFromFile{
+		Type: utils.EventQuery,
+		PrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		PrEndTime: uint64(time.Now().Add(500*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrEndTime: uint64(time.Now().Add(500*time.Second).UnixNano()),
+		PrErrorNo: 1062,
+		RrErrorNo: 1061,
+		Logger: log,
+	}
+	
+	scr.AddOneSqlResultToSQLStat(rs)
+
+}
+
+func TestSqlCompareRes_AddOneSqlResultToSQLStat_succ_with_ErrCode_1 (t *testing.T){
+
+	scr := &SqlCompareRes{
+		ErrCode: 1,
+		Sql : "select * from a;",
+	}
+	rs := &ResFromFile{
+		Type: utils.EventQuery,
+		PrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		PrErrorNo: 0,
+		RrErrorNo: 0,
+		Logger: log,
+	}
+
+	scr.AddOneSqlResultToSQLStat(rs)
+
+}
+
+func TestSqlCompareRes_AddOneSqlResultToSQLStat_succ_with_ErrCode_3 (t *testing.T){
+
+	scr := &SqlCompareRes{
+		ErrCode: 3,
+		Sql : "select * from a;",
+	}
+	rs := &ResFromFile{
+		Type: utils.EventQuery,
+		PrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		PrErrorNo: 0,
+		RrErrorNo: 0,
+		Logger: log,
+	}
+
+	scr.AddOneSqlResultToSQLStat(rs)
+
+}
+
+func TestSqlCompareRes_AddOneSqlResultToSQLStat_succ_with_ErrCode_4 (t *testing.T){
+
+	scr := &SqlCompareRes{
+		ErrCode: 4,
+		Sql : "select * from a;",
+	}
+	rs := &ResFromFile{
+		Type: utils.EventQuery,
+		PrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		PrErrorNo: 0,
+		RrErrorNo: 0,
+		Logger: log,
+	}
+
+	scr.AddOneSqlResultToSQLStat(rs)
+
+}
+
+func TestSqlCompareRes_AddOneSqlResultToSQLStat_OneSQLResultInit_err (t *testing.T){
+
+	scr := &SqlCompareRes{
+		ErrCode: 1,
+		Sql : "select * from a;",
+	}
+	rs := &ResFromFile{
+		Type: utils.EventQuery,
+		PrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		PrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		RrBeginTime: uint64(time.Now().Add(1000*time.Second).UnixNano()),
+		RrEndTime: uint64(time.Now().Add(1500*time.Second).UnixNano()),
+		PrErrorNo: 0,
+		RrErrorNo: 0,
+		Logger: log,
+	}
+
+	err := errors.New("hash string error ")
+	patch := gomonkey.ApplyFunc( utils.HashString, func(s string) (uint64,error) {
+		return 0,err
+	})
+	defer patch.Reset()
+
+
+	scr.AddOneSqlResultToSQLStat(rs)
+
+}
+
+func TestDoCompare_with_DoNot_NeedCompareResult_1(t *testing.T){
+	rs :=&ResFromFile{
+		Type:utils.EventQuit,
+		Query:" ",
+		Params: nil,
+		PrBeginTime:uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(10*time.Second).UnixNano()),
+		RrBeginTime:uint64(time.Now().UnixNano()),
+		RrEndTime:uint64(time.Now().Add(10*time.Second).UnixNano()),
+		PrErrorNo :0,
+		RrErrorNo:0,
+		Logger: log,
+	}
+
+	res := rs.CompareRes()
+
+	assert.New(t).Nil(res)
+}
+
+func TestDoCompare_with_DoNot_NeedCompareResult_2(t *testing.T){
+	rs :=&ResFromFile{
+		Type:utils.EventQuit,
+		Query:" ",
+		Params: nil,
+		PrBeginTime:uint64(time.Now().Add(100*time.Second).UnixNano()),
+		PrEndTime: uint64(time.Now().Add(10*time.Second).UnixNano()),
+		RrBeginTime:uint64(time.Now().Add(100*time.Second).UnixNano()),
+		RrEndTime:uint64(time.Now().Add(10*time.Second).UnixNano()),
+		PrErrorNo :1206,
+		RrErrorNo:1206,
+		Logger: log,
+	}
+
+	res := rs.CompareRes()
+
+	assert.New(t).Nil(res)
+}
+
+func TestDoCompare_with_NeedCompareResult_ErrCode_Not_Equal(t *testing.T){
+	rs :=&ResFromFile{
+		Type:utils.EventQuery,
+		Query:" select * from t",
+		Params: nil,
+		PrBeginTime:uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(10*time.Second).UnixNano()),
+		RrBeginTime:uint64(time.Now().UnixNano()),
+		RrEndTime:uint64(time.Now().Add(10*time.Second).UnixNano()),
+		PrErrorNo :1205,
+		RrErrorNo:1206,
+		Logger: log,
+	}
+
+	res := rs.CompareRes()
+
+	assert.New(t).Equal(res.ErrCode,1)
+}
+
+func TestDoCompare_with_NeedCompareResult_RowCount_Not_Equal(t *testing.T){
+	rs :=&ResFromFile{
+		Type:utils.EventQuery,
+		Query:" select * from t",
+		Params: nil,
+		PrBeginTime:uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(10*time.Second).UnixNano()),
+		RrBeginTime:uint64(time.Now().UnixNano()),
+		RrEndTime:uint64(time.Now().Add(10*time.Second).UnixNano()),
+		PrErrorNo :0,
+		RrErrorNo:0,
+		Logger: log,
+		RrResult: [][]string{{"aaaa"}},
+		PrResult: [][]string{},
+	}
+
+	res := rs.CompareRes()
+
+	assert.New(t).Equal(res.ErrCode,3)
+}
+
+func TestDoCompare_with_NeedCompareResult_RowCount_Equal_with_nil(t *testing.T){
+	rs :=&ResFromFile{
+		Type:utils.EventQuery,
+		Query:" select * from t",
+		Params: nil,
+		PrBeginTime:uint64(time.Now().UnixNano()),
+		PrEndTime: uint64(time.Now().Add(10*time.Second).UnixNano()),
+		RrBeginTime:uint64(time.Now().UnixNano()),
+		RrEndTime:uint64(time.Now().Add(10*time.Second).UnixNano()),
+		PrErrorNo :0,
+		RrErrorNo:0,
+		Logger: log,
+		RrResult: [][]string{{"aaaa"}},
+		PrResult: [][]string{},
+	}
+
+	res := rs.CompareRes()
+
+	assert.New(t).Equal(res.ErrCode,3)
 }
