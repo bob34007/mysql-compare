@@ -86,7 +86,7 @@ func AddKey( key uint64,SQL string, ExecSQL, ExecSQLSucc, ExecSQLFail, SQLCompar
 	defer Mu.Unlock()
 	if v, ok := SQLResults[key]; ok {
 		var found = false
-		for i, _ := range v {
+		for i:= range v {
 			if SQL == (*SQLResults[key][i]).SQLTemplate {
 				(*SQLResults[key][i]).SQLExecCount += ExecSQL
 				(*SQLResults[key][i]).SQLExecSuccCount += ExecSQLSucc
