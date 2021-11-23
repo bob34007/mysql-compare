@@ -102,6 +102,14 @@ func TestCheckIsSelectStmt(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name : "insert select  ",
+			args : args{
+				sql :"insert into t (id,name) select id ,name from t;",
+			},
+			want: false ,
+			wantErr: false,
+		},
+		{
 			name : "parse sql fail ",
 			args : args{
 				sql :"select * from ;",

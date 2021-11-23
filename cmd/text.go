@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"github.com/bobguo/mysql-compare/compare"
 	"github.com/bobguo/mysql-compare/stat"
 	"github.com/bobguo/mysql-compare/utils"
@@ -13,20 +12,7 @@ import (
 	"time"
 )
 
-func printTime(log *zap.Logger) {
-	t := time.NewTicker(time.Second * 60)
-	ts := time.Now()
-	for {
-		select {
-		case <-t.C:
-			fmt.Println(time.Now().String() + ":" + fmt.Sprintf("program run %v seconds", time.Since(ts).Seconds()))
-		default:
-			time.Sleep(time.Second * 5)
-		}
 
-	}
-
-}
 
 func NewTextCompareCommand() *cobra.Command {
 	var (

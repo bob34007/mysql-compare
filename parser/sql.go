@@ -46,14 +46,12 @@ func (osr *OneSQLResult)GenerateSQLTemplate()  {
 
 
 type CheckIsSelectOrNot struct {
+	ns []ast.Node
 	t bool
 }
 
 func (v *CheckIsSelectOrNot) Enter(in ast.Node) (ast.Node, bool) {
-
-	if _, ok := in.(*ast.SelectStmt); ok {
-		v.t = true
-	}
+	v.ns=append(v.ns,in)
 	return in, false
 }
 
@@ -66,7 +64,9 @@ func extract(rootNode *ast.StmtNode) bool {
 	v := &CheckIsSelectOrNot{t :false}
 
 	(*rootNode).Accept(v)
-
+	if _, ok := v.ns[0].(*ast.SelectStmt); ok {
+		v.t = true
+	}
 	return  v.t
 }
 
