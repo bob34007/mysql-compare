@@ -185,12 +185,14 @@ func (rs *ResFromFile) CompareRes() *SqlCompareRes {
 
 	if rs.PrErrorNo != 0 {
 		m["PrExecFailCount"] = 1
+		rs.Logger.Warn(fmt.Sprintf("sql exec on pr fail , %s-%v-%v-%s",res.Sql,res.Values,rs.PrErrorNo,rs.PrErrorDesc))
 	} else {
 		m["PrExecSuccCount"] = 1
 	}
 
 	if rs.RrErrorNo != 0 {
 		m["RrExecFailCount"] = 1
+		rs.Logger.Warn(fmt.Sprintf("sql exec on rr fail , %s-%v-%v-%s",res.Sql,res.Values,rs.RrErrorNo,rs.RrErrorDesc))
 	} else {
 		m["RrExecSuccCount"] = 1
 	}
@@ -447,11 +449,12 @@ func DoCompareFinish (f *os.File,log *zap.Logger,filePath,backDir,fileName strin
 //read result from file ,and compare packet result and replay server result
 func DoCompare(fileName string,ct *int32,wg *sync.WaitGroup,filePath,backDir string ) {
 
-
 	defer atomic.AddInt32(ct,-1)
 	defer wg.Done()
 	fn := filePath+"/"+fileName
 	logger := utils.FileName(fn).Logger()
+	logger.Info("begin to  process file " + fn)
+	defer logger.Info("end to  process file " + fn)
 
 	f ,err := DoComparePre(fn,logger)
 	if err !=nil{
@@ -494,7 +497,7 @@ func DoCompare(fileName string,ct *int32,wg *sync.WaitGroup,filePath,backDir str
 		}
 
 	}
-	logger.Info("read data file success")
+	logger.Info("read data file success" + fn)
 	stat.Statis.AddStatic("ReadSuccFiles", logger)
 	return
 }

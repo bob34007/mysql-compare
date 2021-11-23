@@ -62,6 +62,8 @@ func HandleExit(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
+
 func HandleQueryStats(w http.ResponseWriter, r *http.Request) {
 
 	logger.Info("request query stats from " + r.Host )
@@ -80,6 +82,7 @@ func AddPortListenAndServer(port uint16,c chan int){
 
 	http.HandleFunc("/stats", HandleQueryStats)
 	http.HandleFunc("/exit", HandleExit)
+
 
 	http.ListenAndServe(generateListenStr(port), nil)
 
