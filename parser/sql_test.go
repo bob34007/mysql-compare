@@ -110,6 +110,22 @@ func TestCheckIsSelectStmt(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name : "sql is not select  ",
+			args : args{
+				sql :"update t set id =100 where id =10;",
+			},
+			want: false ,
+			wantErr: false,
+		},
+		{
+			name : "select into outfile ",
+			args : args{
+				sql :"select id,name from test where id >100 into outfile 'test.txt';",
+			},
+			want: false  ,
+			wantErr: false,
+		},
+		{
 			name : "parse sql fail ",
 			args : args{
 				sql :"select * from ;",

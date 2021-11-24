@@ -28,3 +28,23 @@ func printTime(log *zap.Logger) {
 	}
 
 }
+
+//get the file with the smallest filename order from the container
+func getFirstFileName(files map[string]int) string {
+	fileName:=""
+	for k,v :=range files{
+		if v != 0 {
+			continue
+		}
+		if len(fileName) ==0 {
+			fileName = k
+		}
+		if k < fileName{
+			fileName = k
+		}
+	}
+	if len(fileName) > 0 {
+		files[fileName] = 1
+	}
+	return fileName
+}

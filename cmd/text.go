@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-
-
 func NewTextCompareCommand() *cobra.Command {
 	var (
 		dataDir       string
@@ -54,34 +52,35 @@ func NewTextCompareCommand() *cobra.Command {
 			compare.BasePercent = uint64(basePercent)
 			//use for save server channel
 			c := make(chan int, 1)
-			go AddPortListenAndServer(listenPort,c)
+			go AddPortListenAndServer(listenPort, c)
 
 			wg := new(sync.WaitGroup)
 			ctx, cancel := context.WithCancel(context.Background())
 			go stat.Statis.PrintStaticWithTimer(ctx, log)
 			go utils.WatchDirCreateFile(ctx, dataDir, files, mu, log)
 
+			var fileName = ""
 			var exit = false
 			for {
 				if atomic.LoadInt32(&ctGorountines) < maxGoroutines {
 					mu.Lock()
-					for k, v := range files {
-						if v > 0 {
-							continue
-						}
-						files[k] = 1
-						atomic.AddInt32(&ctGorountines, 1)
-						wg.Add(1)
-						go func(k string) {
-							compare.DoCompare(k, &ctGorountines, wg, dataDir, backDir)
-						}(k)
-						if atomic.LoadInt32(&ctGorountines) >= maxGoroutines {
-							break
-						}
+					fileName = getFirstFileName(files)
+					if len(fileName) <=0{
+						mu.Unlock()
+						goto LOOP
+					}
+					atomic.AddInt32(&ctGorountines, 1)
+					wg.Add(1)
+					go func(fileName string) {
+						compare.DoCompare(fileName, &ctGorountines, wg, dataDir, backDir)
+					}(fileName)
+					if atomic.LoadInt32(&ctGorountines) >= maxGoroutines {
+						mu.Unlock()
+						goto LOOP
 					}
 					mu.Unlock()
 				}
-
+LOOP:
 				select {
 				case <-t.C:
 					if time.Now().Sub(ts).Seconds() > float64(runTime*60) {

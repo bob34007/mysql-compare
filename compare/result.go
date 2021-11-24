@@ -357,7 +357,7 @@ func (rs *ResFromFile)PrintExecCostTimeAbnormal(prAvgTime,rrAvgTime uint64){
 
 func (rs *ResFromFile) HashPrResDetail() ([][]interface{}, error) {
 	//var rowStr string
-	res := make([][]interface{}, 0)
+	res := make([][]interface{}, 0,len(rs.PrResult))
 	for i := range rs.PrResult {
 		rowStr := strings.Join(rs.PrResult[i], "")
 		rowv := make([]interface{}, 0)
@@ -373,7 +373,7 @@ func (rs *ResFromFile) HashPrResDetail() ([][]interface{}, error) {
 
 func (rs *ResFromFile) HashRrResDetail() ([][]interface{}, error) {
 	//var rowStr string
-	res := make([][]interface{}, 0)
+	res := make([][]interface{}, 0,len(rs.RrResult))
 	for i := range rs.RrResult {
 		rowStr := strings.Join(rs.RrResult[i], "")
 		rowv := make([]interface{}, 0)
