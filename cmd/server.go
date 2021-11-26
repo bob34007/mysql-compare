@@ -54,10 +54,17 @@ func HandleExit(w http.ResponseWriter, r *http.Request) {
 	logger.Info("request exit from " + r.Host )
 	defer logger.Info("response exit to " + r.Host )
 	if !exitStatus {
+		exitStatus=true
 		exitChannel <- 1
-		w.Write([]byte("ok!"))
+		_,err:=w.Write([]byte("ok!"))
+		if err !=nil {
+			logger.Warn("write response file," + err.Error())
+		}
 	} else {
-		w.Write([]byte("program is exiting!"))
+		_,err:=w.Write([]byte("program is exited!"))
+		if err !=nil {
+			logger.Warn("write response file," + err.Error())
+		}
 	}
 
 }
@@ -70,9 +77,15 @@ func HandleQueryStats(w http.ResponseWriter, r *http.Request) {
 	defer logger.Info("response query stats to " + r.Host)
 	err,str:=stat.QueryMapStr()
 	if err !=nil{
-		w.Write([]byte(err.Error()))
+		_,err=w.Write([]byte(err.Error()))
+		if err !=nil {
+			logger.Warn("write response file," + err.Error())
+		}
 	}
-	w.Write([]byte(str))
+	_,err =w.Write([]byte(str))
+	if err !=nil {
+		logger.Warn("write response file," + err.Error())
+	}
 
 }
 
@@ -84,6 +97,9 @@ func AddPortListenAndServer(port uint16,c chan int){
 	http.HandleFunc("/exit", HandleExit)
 
 
-	http.ListenAndServe(generateListenStr(port), nil)
+	err := http.ListenAndServe(generateListenStr(port), nil)
+	if err !=nil{
+		logger.Warn(fmt.Sprintf("listen port:%v fail ,%v",port,err.Error()))
+	}
 
 }

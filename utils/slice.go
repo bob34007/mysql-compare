@@ -30,8 +30,8 @@ func Sort2DSlice(a [][]interface{}) {
 		case string:
 			return m.(string) < n.(string)
 		default:
-			//fmt.Println("unsport type : " + reflect.ValueOf(m).Type().String())
-			//Unsupported types so far we return true
+			//fmt.Println("not supported type : " + reflect.ValueOf(m).Type().String())
+			//Unsupported types so far we return false
 			return false
 		}
 	}

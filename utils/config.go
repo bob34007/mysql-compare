@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c)  2021 PingCAP, Inc.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,37 +11,47 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- ******************************************************************************/
+ */
 
 /**
  * @Author: guobob
  * @Description:
- * @File:  watchdir_test.go
+ * @File:  config.go
  * @Version: 1.0.0
- * @Date: 2021/11/24 14:20
+ * @Date: 2021/11/26 15:47
  */
 
 package utils
 
-import (
-	"context"
-	"go.uber.org/zap"
-	"sync"
-	"testing"
-	"time"
-)
+import "github.com/pingcap/errors"
 
-func TestWatchDirCreateFile(t *testing.T) {
+type Config struct{
+	DataDir       string
+	BackDir       string
+	MaxGoroutines int32
+	RunTime       uint32
+	ListenPort    uint16
+	BasePercent   uint16
+}
 
-	filePath:="./"
-	files:=make(map[string]int)
-	var mu sync.Mutex
-	log:=zap.L().Named("test")
-	ctx, cancel := context.WithCancel(context.Background())
-	go  func (){
-		time.Sleep(time.Millisecond *100)
-		cancel()
-	}()
-	WatchDirCreateFile(ctx,filePath,files,&mu,log)
 
+func (cfg *Config )CheckConfig() error{
+	var err error
+	if len(cfg.BackDir)>0 {
+		_, err = CheckDirExist(cfg.BackDir)
+		if err != nil {
+			return err
+		}
+	}
+	_,err =CheckDirExist(cfg.DataDir)
+	if err!=nil{
+		return err
+	}
+
+	if cfg.MaxGoroutines < 0 {
+		err = errors.New("param  MaxGoroutines invalid")
+		return err
+	}
+
+	return nil
 }

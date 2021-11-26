@@ -14,12 +14,7 @@ import (
 
 func NewTextCompareCommand() *cobra.Command {
 	var (
-		dataDir       string
-		backDir       string
-		maxGoroutines int32
-		runTime       uint32
-		listenPort    uint16
-		basePercent   uint16
+		cfg = &utils.Config{}
 	)
 	cmd := &cobra.Command{
 		Use:   "compare",
@@ -28,10 +23,10 @@ func NewTextCompareCommand() *cobra.Command {
 
 			log := zap.L().Named("compare")
 			log.Info("process begin run at " + time.Now().String())
-			ok, err := utils.CheckDirExist(dataDir)
-			if !ok {
+			err := cfg.CheckConfig()
+			if err !=nil {
 				log.Error("param dataDir error , " + err.Error())
-				return nil
+				return err
 			}
 
 			go printTime(log)
@@ -43,26 +38,26 @@ func NewTextCompareCommand() *cobra.Command {
 			mu := new(sync.Mutex)
 			var ctGorountines int32 = 0
 			files := make(map[string]int, 0)
-			err = utils.GetDataFile(dataDir, files, mu)
+			err = utils.GetDataFile(cfg.DataDir, files, mu)
 			if err != nil {
 				log.Error("get file from dataDir fail , " + err.Error())
 				return nil
 			}
 
-			compare.BasePercent = uint64(basePercent)
+			compare.BasePercent = uint64(cfg.BasePercent)
 			//use for save server channel
 			c := make(chan int, 1)
-			go AddPortListenAndServer(listenPort, c)
+			go AddPortListenAndServer(cfg.ListenPort, c)
 
 			wg := new(sync.WaitGroup)
 			ctx, cancel := context.WithCancel(context.Background())
 			go stat.Statis.PrintStaticWithTimer(ctx, log)
-			go utils.WatchDirCreateFile(ctx, dataDir, files, mu, log)
+			go utils.WatchDirCreateFile(ctx, cfg.DataDir, files, mu, log)
 
 			var fileName = ""
 			var exit = false
 			for {
-				if atomic.LoadInt32(&ctGorountines) < maxGoroutines {
+				if atomic.LoadInt32(&ctGorountines) < cfg.MaxGoroutines {
 					mu.Lock()
 					fileName = getFirstFileName(files)
 					if len(fileName) <=0{
@@ -72,9 +67,9 @@ func NewTextCompareCommand() *cobra.Command {
 					atomic.AddInt32(&ctGorountines, 1)
 					wg.Add(1)
 					go func(fileName string) {
-						compare.DoCompare(fileName, &ctGorountines, wg, dataDir, backDir)
+						compare.DoCompare(fileName, &ctGorountines, wg, cfg.DataDir, cfg.BackDir)
 					}(fileName)
-					if atomic.LoadInt32(&ctGorountines) >= maxGoroutines {
+					if atomic.LoadInt32(&ctGorountines) >= cfg.MaxGoroutines {
 						mu.Unlock()
 						goto LOOP
 					}
@@ -83,7 +78,7 @@ func NewTextCompareCommand() *cobra.Command {
 LOOP:
 				select {
 				case <-t.C:
-					if time.Now().Sub(ts).Seconds() > float64(runTime*60) {
+					if time.Now().Sub(ts).Seconds() > float64(cfg.RunTime*60) {
 						exit = true
 					}
 				case <-c:
@@ -112,13 +107,13 @@ LOOP:
 		},
 	}
 
-	cmd.Flags().StringVarP(&dataDir, "data-dir", "d", "", "directory used to read the result set")
-	cmd.Flags().StringVarP(&backDir, "back-dir", "b", "", "directory used to back up the result file")
-	cmd.Flags().Int32VarP(&maxGoroutines, "max-routines", "g", 10, "max goroutines to parse result files")
-	cmd.Flags().Uint32VarP(&runTime, "runtime", "t", 10,
+	cmd.Flags().StringVarP(&cfg.DataDir, "data-dir", "d", "", "directory used to read the result set")
+	cmd.Flags().StringVarP(&cfg.BackDir, "back-dir", "b", "", "directory used to back up the result file")
+	cmd.Flags().Int32VarP(&cfg.MaxGoroutines, "max-routines", "g", 10, "max goroutines to parse result files")
+	cmd.Flags().Uint32VarP(&cfg.RunTime, "runtime", "t", 10,
 		"program runtime, if zero is specified then all files in the current directory will be processed")
-	cmd.Flags().Uint16VarP(&listenPort, "listen-port", "P", 7001, "http server port , Provide query statistical (query) information and exit (exit) services")
-	cmd.Flags().Uint16VarP(&basePercent, "base-percent", "B", 100, "SQL execution time deterioration statistics benchmark %")
+	cmd.Flags().Uint16VarP(&cfg.ListenPort, "listen-port", "P", 7001, "http server port , Provide query statistical (query) information and exit (exit) services")
+	cmd.Flags().Uint16VarP(&cfg.BasePercent, "base-percent", "B", 100, "SQL execution time deterioration statistics benchmark %")
 
 	return cmd
 }
