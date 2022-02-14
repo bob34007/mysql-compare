@@ -24,14 +24,15 @@
 package utils
 
 import (
+	"testing"
+
 	"github.com/agiledragon/gomonkey"
 	"github.com/pingcap/errors"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
-func Test_CheckConfig_CheckBackDir_len_zero (t *testing.T){
-	cfg:=&Config{
+func Test_CheckConfig_CheckBackDir_len_zero(t *testing.T) {
+	cfg := &Config{
 		BackDir: "",
 	}
 	err := cfg.CheckConfig()
@@ -39,51 +40,49 @@ func Test_CheckConfig_CheckBackDir_len_zero (t *testing.T){
 	assert.New(t).NotNil(err)
 }
 
-func Test_CheckConfig_CheckBackDir_fail (t *testing.T){
-	cfg:=&Config{
+func Test_CheckConfig_CheckBackDir_fail(t *testing.T) {
+	cfg := &Config{
 		BackDir: "./",
 	}
 
-	err:=errors.New("check backdir fail")
-	patch := gomonkey.ApplyFunc(CheckDirExist, func(path string) (bool,error){
-		return false,err
+	err := errors.New("check backdir fail")
+	patch := gomonkey.ApplyFunc(CheckDirExist, func(path string) (bool, error) {
+		return false, err
 	})
 	defer patch.Reset()
 
 	err1 := cfg.CheckConfig()
 
-	assert.New(t).Equal(err,err1)
+	assert.New(t).Equal(err, err1)
 }
 
-
-func Test_CheckConfig_CheckDataDir_fail (t *testing.T){
-	cfg:=&Config{
+func Test_CheckConfig_CheckDataDir_fail(t *testing.T) {
+	cfg := &Config{
 		BackDir: "./",
 	}
 
-	err:=errors.New("check data dir fail")
+	err := errors.New("check data dir fail")
 
 	outputs := []gomonkey.OutputCell{
-		{Values: gomonkey.Params{true,nil}},
-		{Values: gomonkey.Params{false,err}},
+		{Values: gomonkey.Params{true, nil}},
+		{Values: gomonkey.Params{false, err}},
 	}
-	patches :=gomonkey.ApplyFuncSeq(CheckDirExist, outputs)
+	patches := gomonkey.ApplyFuncSeq(CheckDirExist, outputs)
 	patches.Reset()
 
 	err1 := cfg.CheckConfig()
 
-	assert.New(t).Equal(err,err1)
+	assert.New(t).Equal(err, err1)
 }
 
-
-func Test_CheckConfig_CheckMaxGoroutines_fail (t *testing.T){
-	cfg:=&Config{
-		BackDir: "./",
+func Test_CheckConfig_CheckMaxGoroutines_fail(t *testing.T) {
+	cfg := &Config{
+		BackDir:       "./",
 		MaxGoroutines: -1,
 	}
 
-	patch := gomonkey.ApplyFunc(CheckDirExist, func(path string) (bool,error){
-		return true,nil
+	patch := gomonkey.ApplyFunc(CheckDirExist, func(path string) (bool, error) {
+		return true, nil
 	})
 	defer patch.Reset()
 
@@ -92,15 +91,14 @@ func Test_CheckConfig_CheckMaxGoroutines_fail (t *testing.T){
 	assert.New(t).NotNil(err1)
 }
 
-
-func Test_CheckConfig_CheckMaxGoroutines_succ (t *testing.T){
-	cfg:=&Config{
-		BackDir: "./",
+func Test_CheckConfig_CheckMaxGoroutines_succ(t *testing.T) {
+	cfg := &Config{
+		BackDir:       "./",
 		MaxGoroutines: 1,
 	}
 
-	patch := gomonkey.ApplyFunc(CheckDirExist, func(path string) (bool,error){
-		return true,nil
+	patch := gomonkey.ApplyFunc(CheckDirExist, func(path string) (bool, error) {
+		return true, nil
 	})
 	defer patch.Reset()
 

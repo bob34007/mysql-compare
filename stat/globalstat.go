@@ -31,8 +31,6 @@ func init() {
 	m["PrExecSuccCount"] = 0
 	m["PrExecFailCount"] = 0
 	m["PrExecTimeCount"] = 0
-//	m["PrMaxExecTime"] = 0
-//	m["PrMinExecTime"] = 0
 	m["PrExecTimeIn10ms"] = 0
 	m["PrExecTimeIn20ms"] = 0
 	m["PrExecTimeIn30ms"] = 0
@@ -44,8 +42,6 @@ func init() {
 	m["RrExecRowCount"] = 0
 	m["RrExecSuccCount"] = 0
 	m["RrExecFailCount"] = 0
-//	m["RrMaxExecTime"] = 0
-//	m["RrMinExecTime"] = 0
 	m["RrExecTimeIn10ms"] = 0
 	m["RrExecTimeIn20ms"] = 0
 	m["RrExecTimeIn30ms"] = 0

@@ -26,43 +26,40 @@ package parser
 import (
 	_ "github.com/pingcap/tidb/parser/test_driver"
 	//"github.com/pingcap/tidb/parser"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"testing"
 )
 
-var log =  zap.L().With(zap.String("util", "file"))
+var log = zap.L().With(zap.String("util", "file"))
 
-
-
-
-
-func TestParse_With_Succ(t *testing.T){
-	sql :="select * from t1 where id =1;"
-	_,err := parse(sql)
+func TestParse_With_Succ(t *testing.T) {
+	sql := "select * from t1 where id =1;"
+	_, err := parse(sql)
 	assert.New(t).Nil(err)
 }
 
-func TestParse_With_fail(t *testing.T){
+func TestParse_With_fail(t *testing.T) {
 
-	sql:="select id from "
-	_,err := parse(sql)
+	sql := "select id from "
+	_, err := parse(sql)
 
 	assert.New(t).NotNil(err)
 }
 
-func TestParse_With_Result_len_zero(t *testing.T){
+func TestParse_With_Result_len_zero(t *testing.T) {
 
-	sql:=" "
-	_,err := parse(sql)
+	sql := " "
+	_, err := parse(sql)
 	//fmt.Println(err.Error())
 	assert.New(t).NotNil(err)
 }
 
-func TestParse_With_Prepare_Succ(t *testing.T){
-	sql:="select * from t where id =?;"
+func TestParse_With_Prepare_Succ(t *testing.T) {
+	sql := "select * from t where id =?;"
 
-	_,err := parse(sql)
+	_, err := parse(sql)
 
 	assert.New(t).Nil(err)
 }
@@ -78,59 +75,59 @@ func TestCheckIsSelectStmt(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name : "sql is select ",
-			args : args{
-				sql :"select * from t1 where id =10;",
+			name: "sql is select ",
+			args: args{
+				sql: "select * from t1 where id =10;",
 			},
-			want: true ,
+			want:    true,
 			wantErr: false,
 		},
 		{
-			name : "sql is  select  for update ",
-			args : args{
-				sql :"select * from t1 where id =10 for update;",
+			name: "sql is  select  for update ",
+			args: args{
+				sql: "select * from t1 where id =10 for update;",
 			},
-			want: true ,
+			want:    true,
 			wantErr: false,
 		},
 		{
-			name : "sql is not select ",
-			args : args{
-				sql :"insert into t (id,name) values (1,'aaa');",
+			name: "sql is not select ",
+			args: args{
+				sql: "insert into t (id,name) values (1,'aaa');",
 			},
-			want: false ,
+			want:    false,
 			wantErr: false,
 		},
 		{
-			name : "insert select  ",
-			args : args{
-				sql :"insert into t (id,name) select id ,name from t;",
+			name: "insert select  ",
+			args: args{
+				sql: "insert into t (id,name) select id ,name from t;",
 			},
-			want: false ,
+			want:    false,
 			wantErr: false,
 		},
 		{
-			name : "sql is not select  ",
-			args : args{
-				sql :"update t set id =100 where id =10;",
+			name: "sql is not select  ",
+			args: args{
+				sql: "update t set id =100 where id =10;",
 			},
-			want: false ,
+			want:    false,
 			wantErr: false,
 		},
 		{
-			name : "select into outfile ",
-			args : args{
-				sql :"select id,name from test where id >100 into outfile 'test.txt';",
+			name: "select into outfile ",
+			args: args{
+				sql: "select id,name from test where id >100 into outfile 'test.txt';",
 			},
-			want: false  ,
+			want:    false,
 			wantErr: false,
 		},
 		{
-			name : "parse sql fail ",
-			args : args{
-				sql :"select * from ;",
+			name: "parse sql fail ",
+			args: args{
+				sql: "select * from ;",
 			},
-			want: false ,
+			want:    false,
 			wantErr: true,
 		},
 	}

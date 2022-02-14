@@ -68,7 +68,7 @@ type SQLResult struct {
 var SQLResults map[uint64][]*SQLResult
 //for protecting SQL template storage structures
 var Mu *sync.RWMutex
-//var Log *zap.Logger
+
 
 
 func init(){
