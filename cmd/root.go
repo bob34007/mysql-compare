@@ -20,7 +20,7 @@ func NewRootCmd() *cobra.Command {
 	}
 	var profiler interface{ Stop() }
 	cmd := &cobra.Command{
-		Use: "mysql-replay",
+		Use: "mysql-compare",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			rand.Seed(time.Now().UnixNano())
 			cfg := zap.NewDevelopmentConfig()
@@ -70,4 +70,3 @@ type LogLevel struct {
 func (lv *LogLevel) Type() string {
 	return "string"
 }
-
